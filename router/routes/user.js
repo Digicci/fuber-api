@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();    // Create a router
-const utilisateur = require('../../models/utilisateur');
+const db = require('../../models/index');
 
 router.post('/login', function (req, res) {
     const { email, password } = req.body
@@ -17,26 +17,12 @@ router.post('/login', function (req, res) {
     }
 })
 
-router.get('/login', function (req, res) {
-    const { email, password } = req.body
-    if (email === '' || password === '') {
-        res.status(400).send('Bad request.')
-    }   else {
-        const response = {
-            requestType : 'GET',
-            email : email,
-            password : password,
-            path: req.path
-        }
-        res.send(response)
-    }
-})
-
 router.post('/signup', function (req, res) {
     const { email, mdp, nom, prenom, tel } = req.body
     if (email === '' || mdp === '' || nom === '' || prenom === '' || tel === '') {
         res.status(400).send('Bad request.')
     }   else {
+        const utilisateur = db['utilisateur']
         utilisateur.findAll({
             attributes: ['mail'],
         }).then((users) => {
@@ -46,7 +32,7 @@ router.post('/signup', function (req, res) {
                 }
             })
         })
-        const user = utilisateur.create({
+        utilisateur.create({
             email : email,
             password : mdp,
             nom : nom,
