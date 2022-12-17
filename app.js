@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const db  = require('./models/index');
+const router = require('./router/index');
 
 const app = express()
 
@@ -14,5 +15,7 @@ app.use(express.urlencoded({extended:false}))
 app.use(function(req,res,next){
     next()
 })
+
+app.use('/api', router)
 
 module.exports = app
