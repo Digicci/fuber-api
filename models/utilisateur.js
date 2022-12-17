@@ -23,6 +23,16 @@ module.exports = (sequelize, DataTypes) => {
     ville: DataTypes.STRING,
     cp: DataTypes.STRING,
     pays: DataTypes.STRING,
+    JWT: {
+        type: DataTypes.STRING,
+        defaultValue: '',
+        allowNull: true
+    },
+    JWT_secret: {
+        type: DataTypes.STRING,
+        defaultValue: '',
+        allowNull: true
+    },
     UUID: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4

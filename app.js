@@ -16,6 +16,6 @@ app.use(function(req,res,next){
     next()
 })
 
-app.use('/', router)
+app.use('/api', router)
 
 module.exports = app
