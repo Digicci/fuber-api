@@ -33,8 +33,8 @@ router.post('/signup', function (req, res) {
             })
         })
         utilisateur.create({
-            email : email,
-            password : mdp,
+            mail : email,
+            mdp : mdp,
             nom : nom,
             prenom : prenom,
             num : tel,
