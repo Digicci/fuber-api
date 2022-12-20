@@ -4,6 +4,7 @@ const db  = require('./models/index');
 const router = require('./router/index');
 const bodyParser = require('body-parser');
 
+
 const app = express()
 
 app.db = db
