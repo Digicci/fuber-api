@@ -1,23 +1,12 @@
 const express = require('express');
 const router = express.Router();    // Create a router
-const db = require('../../models/index');
-const { createUser } = require('../../controllers/userController/index');
+const { createUser, connectUser, getUser } = require('../../controllers/userController/index');
+const checkToken  = require('../../framework/jwtMiddleware');
 
-router.post('/login', function (req, res) {
-    const { email, password } = req.body
-    if (email === '' || password === '') {
-        res.status(400).send('Bad request.')
-    }   else {
-        const response = {
-            requestType : 'POST',
-            email : email,
-            password : password,
-            path: req.path
-        }
-        res.send(response)
-    }
-})
+router.post('/login', connectUser)
 
 router.post('/signup', createUser)
+
+router.get('/get', checkToken, getUser)
 
 module.exports = router
