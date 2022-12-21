@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();    // Create a router
 const { createUser, connectUser, getUser } = require('../../controllers/userController/index');
 const checkToken  = require('../../framework/jwtMiddleware');
+const csrf = require('csurf');
 
-router.post('/login', connectUser)
+let csrfProtection = csrf({ cookie: true });
 
-router.post('/signup', createUser)
+router.post('/login', csrfProtection, connectUser)
 
-router.get('/get', checkToken, getUser)
+router.post('/signup', csrfProtection, createUser)
+
+router.get('/get', csrfProtection, checkToken, getUser)
 
 module.exports = router

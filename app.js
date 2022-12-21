@@ -3,6 +3,7 @@ const cors = require('cors');
 const db  = require('./models/index');
 const router = require('./router/index');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 
 const app = express()
@@ -14,6 +15,7 @@ app.use(cors())
 app.use(bodyParser.urlencoded({extended:false}))
 app.use(bodyParser.json())
 app.use(bodyParser.raw())
+app.use(cookieParser())
 
 app.use(function(req,res,next){
     next()
