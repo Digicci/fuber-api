@@ -91,7 +91,11 @@ function connectUser(req, res) {
                 if (user) {
                     bcrypt.compare(mdp, user.mdp, function (err, result) {
                         if (result) {
-                            const token = jwt.sign({id: user.id, nom: user.nom}, HOTKEY, {expiresIn: '1h'}, {algorithm: 'HS256'})
+                            const token = jwt.sign(
+                                {id: user.id, nom: user.nom},
+                                HOTKEY, {expiresIn: '1h'},
+                                {algorithm: 'HS256'}
+                            )
 
                             user.update({
                                 JWT: token,
