@@ -59,17 +59,17 @@ function connectUser(req, res) {
                 num: tel
             }
         }).then(
-            (user) => {
-                if (user) {
-                    bcrypt.compare(mdp, user.mdp, function (err, result) {
+            (userDB) => {
+                if (userDB) {
+                    bcrypt.compare(mdp, userDB.mdp, function (err, result) {
                         if (result) {
-                            const token = jwt.sign({id: user.id, nom: user.nom}, HOTKEY, {expiresIn: '1h'}, {algorithm: 'HS256'})
+                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, HOTKEY, {expiresIn: '1h'}, {algorithm: 'HS256'})
 
-                            user.update({
+                            userDB.update({
                                 JWT: token,
                                 JWT_secret: HOTKEY
                             })
-                            res.status(200).send(token)
+                            res.status(200).send({token, user: userToSend(userDB)})
                         } else {
                             res.status(401).send('password incorrect')
                         }
@@ -87,21 +87,22 @@ function connectUser(req, res) {
                 mail: email
             }
         }).then(
-            (user) => {
-                if (user) {
-                    bcrypt.compare(mdp, user.mdp, function (err, result) {
+            (userDB) => {
+                if (userDB) {
+                    bcrypt.compare(mdp, userDB.mdp, function (err, result) {
                         if (result) {
                             const token = jwt.sign(
-                                {id: user.id, nom: user.nom},
+                                {id: userDB.id, nom: userDB.nom},
                                 HOTKEY, {expiresIn: '1h'},
                                 {algorithm: 'HS256'}
                             )
 
-                            user.update({
+                            userDB.update({
                                 JWT: token,
                                 JWT_secret: HOTKEY
                             })
-                            res.status(200).send({token, user})
+
+                            res.status(200).send({token, user: userToSend(userDB)})
                         } else {
                             res.status(401).send('password incorrect')
                         }
@@ -114,6 +115,23 @@ function connectUser(req, res) {
     }
     else{
         res.status(400).send('Merci de saisir un email ou un numéro de téléphone.')
+    }
+}
+
+function userToSend(user) {
+    return {
+        id: user.id,
+        nom: user.nom,
+        prenom: user.prenom,
+        mail: user.mail,
+        num: user.num,
+        adresse: user.adresse,
+        ville: user.ville,
+        cp: user.cp,
+        pays: user.pays,
+        UUID: user.UUID,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
     }
 }
 
@@ -134,4 +152,25 @@ function getUser(req, res) {
     )
 }
 
-module.exports = { createUser, connectUser, getUser }
+function logoutUser(req, res) {
+    const utilisateur = db['utilisateur']
+    utilisateur.findOne({
+        where: {
+            id: req.user.id
+        }
+    }).then(
+        (user) => {
+            if (user) {
+                user.update({
+                    JWT: null,
+                    JWT_secret: null
+                })
+                res.status(200).send('true')
+            } else {
+                res.status(400).send('Bad request.')
+            }
+        }
+    )
+}
+
+module.exports = { createUser, connectUser, getUser, logoutUser }

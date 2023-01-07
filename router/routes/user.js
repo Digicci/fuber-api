@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();    // Create a router
-const { createUser, connectUser, getUser } = require('../../controllers/userController/index');
-const checkToken  = require('../../framework/jwtMiddleware');
+const { createUser, connectUser, getUser, logoutUser } = require('../../controllers/userController/index');
+const verifyToken  = require('../../framework/jwtMiddleware');
 
 
 router.post('/login', connectUser)
 
 router.post('/signup', createUser)
 
-router.get('/get', checkToken, getUser)
+router.get('/get', verifyToken, getUser)
+
+router.get('/logout', verifyToken, logoutUser)
 
 module.exports = router
