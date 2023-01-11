@@ -27,7 +27,7 @@ fs
     db[model.name] = model;
   });
 
-makeAssociations(sequelize)
+
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
@@ -38,7 +38,7 @@ Object.keys(db).forEach(modelName => {
     console.log(`table ${modelName} synced`)
   })
 });
-
+makeAssociations(sequelize)
 
 
 db.sequelize = sequelize;
