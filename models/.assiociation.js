@@ -1,5 +1,5 @@
 function makeAssociations(sequelize) {
-    const {entreprise, offre, course, utilisateur} = sequelize.models
+    const {entreprise, offre, course, utilisateur, wallet} = sequelize.models
 
     entreprise.hasMany(offre)
     offre.belongsTo(entreprise)
@@ -8,6 +8,9 @@ function makeAssociations(sequelize) {
     entreprise.hasMany(course)
     course.belongsTo(entreprise)
     course.belongsTo(utilisateur)
+
+    utilisateur.hasMany(wallet)
+    wallet.belongsTo(utilisateur)
 }
 
 module.exports = {makeAssociations}
