@@ -49,6 +49,42 @@ function createUser(req, res) {
 
 }
 
+function updateUser(req, res) {
+    const {mail, nom, num, prenom} = req.body
+    const id = req.user.id
+
+    if (id) {
+        const utilisateur = db['utilisateur']
+        utilisateur.findByPk(id).then((user) => {
+            if(mail) {
+                user.mail = mail
+            }
+            if(nom) {
+                user.nom = nom
+            }
+            if(num) {
+                user.num = num
+            }
+            if(prenom) {
+                user.prenom = prenom
+            }
+            const token = jwt.sign({id: user.id, nom: user.nom}, HOTKEY, {expiresIn: '1h'}, {algorithm: 'HS256'})
+            user.JWT = token
+            user.JWT_secret = HOTKEY
+            user.save().then((user) => {
+                res.status(200).send({token, user: userToSend(user)}) // Send the token and the user
+            }).catch((err) => {
+                res.status(400).send('Bad request.' + err)
+            })
+        }).catch((err) => {
+            res.status(400).send('Bad request.' + err)
+        })
+    }
+    else {
+        res.status(400).send('Bad request.')
+    }
+}
+
 function connectUser(req, res) {
     const { email, tel, mdp } = req.body
     if(!email && (tel && mdp))
@@ -118,23 +154,6 @@ function connectUser(req, res) {
     }
 }
 
-function userToSend(user) {
-    return {
-        id: user.id,
-        nom: user.nom,
-        prenom: user.prenom,
-        mail: user.mail,
-        num: user.num,
-        adresse: user.adresse,
-        ville: user.ville,
-        cp: user.cp,
-        pays: user.pays,
-        UUID: user.UUID,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-    }
-}
-
 function getUser(req, res) {
     const utilisateur = db['utilisateur']
     utilisateur.findOne({
@@ -144,7 +163,7 @@ function getUser(req, res) {
     }).then(
         (user) => {
             if (user) {
-                res.status(200).send(user)
+                res.status(200).send(userToSend(user))
             } else {
                 res.status(400).send('Bad request.')
             }
@@ -173,4 +192,21 @@ function logoutUser(req, res) {
     )
 }
 
-module.exports = { createUser, connectUser, getUser, logoutUser }
+function userToSend(user) {
+    return {
+        id: user.id,
+        nom: user.nom,
+        prenom: user.prenom,
+        mail: user.mail,
+        num: user.num,
+        adresse: user.adresse,
+        ville: user.ville,
+        cp: user.cp,
+        pays: user.pays,
+        UUID: user.UUID,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+    }
+}
+
+module.exports = { createUser, connectUser, getUser, logoutUser, updateUser }
