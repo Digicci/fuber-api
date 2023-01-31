@@ -2,6 +2,8 @@ const db = require('../../models/index');
 const bcrypt = require('bcryptjs');  // Import bcryptjs
 const jwt = require('jsonwebtoken');  // Import jwt
 const HOTKEY = "secret"  // Create a secret key
+const stripe = require("stripe")("sk_test_51MP9laGtIjyGGRoGbOoWLpkX4ypXVOrM34hqC0gUpBUTmcZcEUcB4nVEWc4SPRgYMm0AVs6kH52fwiskGYJAWuUh00GvV6vzsp")
+const {createCustomer} = require('../cardController/index')
 
 function createUser(req, res) {
     const { email, mdp, nom, prenom, tel } = req.body
@@ -16,7 +18,7 @@ function createUser(req, res) {
                 mail: email
             }
         }).then(
-            (user) => {
+            async (user) => {
                 if (user) {
                     res.status(400).send('User already exists.')
                 } else {
@@ -31,6 +33,7 @@ function createUser(req, res) {
                         cp: null,
                         pays: null,
                         code_recup: null,
+                        stripe_id: await createCustomer(),
                         createdAt: new Date(),
                         updatedAt: new Date()
                     }).then((user) => {

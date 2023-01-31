@@ -24,6 +24,7 @@ const verifyToken = (req, res, next) => {
     } else {
         res.status(401).send('Unauthorized')
     }
+
 }
 
 module.exports = verifyToken

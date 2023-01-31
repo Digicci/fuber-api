@@ -40,6 +40,16 @@ module.exports = (sequelize, DataTypes) => {
     code_recup: {
       type: DataTypes.STRING,
       defaultValue: DataTypes.NONE
+    },
+    stripe_id: {
+        type: DataTypes.STRING,
+        defaultValue: DataTypes.NONE,
+        allowNull: true
+    },
+    stripe_card_id: {
+        type: DataTypes.STRING,
+        defaultValue: DataTypes.NONE,
+        allowNull: true
     }
   }, {
     sequelize,
