@@ -38,7 +38,26 @@ function getCards(req, res) {
             res.status(200).send([])
         }
     })
+}
 
+function deleteCard(req, res) {
+    const id = req.user.id
+    const { pm } = req.body
+
+    db.utilisateur.findByPk(id)
+        .then((user) => {
+            if (user.stripe_id) {
+                stripe.paymentMethods.detach(
+                    pm
+                ).then((respond) => {
+                    res.status(200).send(true)
+                }).catch((err) => {
+                    res.status(200).send(false)
+                })
+            }
+        }).catch((err) => {
+        console.log(err)
+    })
 }
 
 function saveIntent(req, res) {
@@ -56,4 +75,4 @@ function saveIntent(req, res) {
     })
 }
 
-module.exports = {addCardIntent, getCards, saveIntent, createCustomer}
+module.exports = {addCardIntent, getCards, saveIntent, createCustomer, deleteCard}
