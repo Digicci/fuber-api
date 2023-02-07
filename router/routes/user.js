@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();    // Create a router
 const { createUser, connectUser, getUser, logoutUser, updateUser} = require('../../controllers/userController/index');
-const { addCardIntent, getCards, saveIntent, deleteCard } = require('../../controllers/cardController/index')
+const { addCardIntent, getCards, saveIntent, setDefault, getDefault,  deleteCard } = require('../../controllers/cardController/index')
 const verifyToken  = require('../../framework/jwtMiddleware');
 
 
@@ -20,6 +20,10 @@ router.get('/saveCardIntent', verifyToken, saveIntent)
 router.post('/card/delete', verifyToken, deleteCard)
 
 router.get('/cards', verifyToken, getCards)
+
+router.post('/setDefault', verifyToken, setDefault)
+
+router.get('/getDefault', verifyToken, getDefault)
 
 router.put('/update', verifyToken, updateUser)
 

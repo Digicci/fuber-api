@@ -14,17 +14,20 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   course.init({
-    prix: DataTypes.FLOAT,
-    heure_depart_estime: DataTypes.DATE,
-    heure_arriver_estime: DataTypes.DATE,
-    adresse_depart: DataTypes.STRING,
-    adresse_arrive: DataTypes.STRING,
-    heure_depart_reel: DataTypes.DATE,
-    heure_arrive_reel: DataTypes.DATE,
-    terminer: DataTypes.BOOLEAN,
-    note: DataTypes.FLOAT,
-    commentaire: DataTypes.STRING,
-    date_course: DataTypes.DATE
+    total: DataTypes.FLOAT,
+    promoId: {
+        type: DataTypes.INTEGER,
+        defaultValue: null,
+        allowNull: true
+    },
+    start: DataTypes.STRING,
+    end: DataTypes.STRING,
+    startLat: DataTypes.FLOAT,
+    startLng: DataTypes.FLOAT,
+    endLat: DataTypes.FLOAT,
+    endLng: DataTypes.FLOAT,
+    driverPrice: DataTypes.FLOAT,
+    commissionPrice: DataTypes.FLOAT
   }, {
     sequelize,
     modelName: 'course',
