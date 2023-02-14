@@ -20,9 +20,15 @@ module.exports = (sequelize, DataTypes) => {
     siret: DataTypes.STRING,
     tva: DataTypes.FLOAT,
     adresse: DataTypes.STRING,
+    cp: DataTypes.STRING,
+    ville: DataTypes.STRING,
     num: DataTypes.STRING,
     mail: DataTypes.STRING,
     mdp: DataTypes.STRING,
+    statut: {
+        type: DataTypes.STRING,
+        defaultValue: 'pending'
+    },
     code_recup: DataTypes.STRING,
     employer: DataTypes.INTEGER,
     UUID: DataTypes.UUID

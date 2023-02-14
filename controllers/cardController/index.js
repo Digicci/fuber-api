@@ -17,6 +17,23 @@ function addCardIntent(req, res) {
     })
 }
 
+function confirmPaiement(pm, user, amount) {
+    return new Promise((resolve, reject) => {
+        stripe.paymentIntents.create({
+            amount: parseFloat(amount),
+            currency: 'eur',
+            customer: user,
+            payment_method: pm,
+            off_session: true,
+            confirm: true,
+        }).then((intent) => {
+            resolve(intent)
+        }).catch((err) => {
+            reject(err)
+        })
+    })
+}
+
 async function createCustomer() {
     const customer = await stripe.customers.create()
     return customer.id
@@ -31,14 +48,83 @@ function getCards(req, res) {
                 customer: user.stripe_id,
                 type: 'card',
             }).then((customer) => {
-                console.log(customer)
                 res.status(200).send(customer.data ?? [])
             })
         } else {
             res.status(200).send([])
         }
     })
+}
 
+function deleteCard(req, res) {
+    const id = req.user.id
+    const { pm } = req.body
+
+    db.utilisateur.findByPk(id)
+        .then((user) => {
+            if (user.stripe_id) {
+                stripe.paymentMethods.detach(
+                    pm
+                ).then((respond) => {
+                    res.status(200).send(true)
+                }).catch((err) => {
+                    res.status(200).send(false)
+                })
+            }
+        }).catch((err) => {
+            res.status(200).send(false)
+    })
+}
+
+function setDefault (req, res) {
+    const id = req.user.id
+    const { pm } = req.body
+
+    db.utilisateur.findByPk(id)
+        .then((user) => {
+            if (user.stripe_id) {
+                stripe.customers.update(
+                    user.stripe_id,
+                    {invoice_settings: {default_payment_method: pm}}
+                ).then((respond) => {
+                    res.status(200).send(true)
+                }).catch((err) => {
+                    res.status(200).send(false)
+                })
+            }
+        }).catch((err) => {
+            res.status(200).send(false)
+    })
+}
+
+function getDefault(req, res) {
+    const id = req.user.id
+
+    db.utilisateur.findByPk(id)
+        .then((user) => {
+            if (user.stripe_id) {
+                stripe.customers.retrieve(
+                    user.stripe_id
+                ).then((respond) => {
+                    const pm = respond.invoice_settings.default_payment_method
+                    if (pm) {
+                        stripe.paymentMethods.retrieve(
+                            pm
+                        ).then((respond) => {
+                            res.status(200).send(respond)
+                        }).catch((err) => {
+                            res.status(200).send(false)
+                        })
+                    } else {
+                        res.status(200).send(false)
+                    }
+                }).catch((err) => {
+                    res.status(200).send(false)
+                })
+            }
+        }).catch((err) => {
+            res.status(200).send(false)
+    })
 }
 
 function saveIntent(req, res) {
@@ -47,6 +133,7 @@ function saveIntent(req, res) {
         if (user) {
             stripe.setupIntents.confirm(user.stripe_card_id, {
                 payment_method: 'pm_card_visa',
+                usage: 'off_session',
             }).then((intent) => {
                 user.stripe_card_id = intent.client_secret
                 user.save()
@@ -56,4 +143,4 @@ function saveIntent(req, res) {
     })
 }
 
-module.exports = {addCardIntent, getCards, saveIntent, createCustomer}
+module.exports = {addCardIntent, confirmPaiement, getCards, saveIntent, createCustomer, setDefault, getDefault, deleteCard}
