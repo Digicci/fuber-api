@@ -36,6 +36,22 @@ function addRace(req,res) {
     })
 }
 
+function getAllPendingByUser(req,res) {
+    const userId = req.user.id
+    db.course.findAll({
+        where: {
+            utilisateurId: userId
+        }
+    }).then((races) => {
+        if (races.length > 0 ){
+            res.status(200).send(races)
+        } else {
+            res.status(200).send(false)
+        }
+    })
+}
+
 module.exports = {
-    addRace
+    addRace,
+    getAllPendingByUser
 }
