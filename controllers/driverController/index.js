@@ -62,4 +62,29 @@ function createDriver(req, res) {
     })
 }
 
-module.exports = { createDriver }
+function login(req, res) {
+    const { mail, mdp } = req.body
+    if (!mail || !mdp) {
+        res.status(400).send('Bad request.')
+    }
+    const driver = db['entreprise']
+    driver.findOne({
+        where: {
+            mail: mail
+        }
+    }).then((dbDriver) => {
+        if (dbDriver) {
+            const valid = bcrypt.compareSync(mdp, dbDriver.mdp)
+            if (valid) {
+                const token = jwt.sign({ id: dbDriver.id }, HOTKEY, { expiresIn: '24h' })
+                res.status(200).send({ auth: true, token: token, driver: dbDriver })
+            } else {
+                res.status(401).send({ auth: false, token: null, message: 'Invalid connexion informations' })
+            }
+        } else {
+            res.status(404).send('Driver not found.')
+        }
+    })
+}
+
+module.exports = { createDriver, login }
