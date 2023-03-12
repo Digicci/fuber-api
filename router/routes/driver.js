@@ -6,6 +6,6 @@ const verifyToken = require('../../framework/jwtMiddleware');
 router.post('/signup', createDriver)
 router.post('/login', login)
 router.get('/get',verifyToken, getEntreprise)
-router.get('/logout', logout)
+router.get('/logout', verifyToken, logout)
 
 module.exports = router
