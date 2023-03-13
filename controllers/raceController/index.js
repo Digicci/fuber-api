@@ -42,9 +42,20 @@ function getAllPendingByUser(req,res) {
         where: {
             utilisateurId: userId
         }
-    }).then((races) => {
+    }).then(async (races) => {
         if (races.length > 0 ){
-            res.status(200).send(races)
+            //Récupere les infos de l'entreprise et les joint à la course
+            let racesArray = []
+
+            for (const race in races) {
+                const driver = await db.entreprise.findByPk(races[race].entrepriseId)
+                racesArray.push({
+                    race: races[race].dataValues,
+                    driver: driver.dataValues
+                })
+            }
+
+            res.status(200).send(racesArray)
         } else {
             res.status(200).send(false)
         }

@@ -102,7 +102,7 @@ function connectUser(req, res) {
                 if (userDB) {
                     bcrypt.compare(mdp, userDB.mdp, function (err, result) {
                         if (result) {
-                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, HOTKEY, {expiresIn: '1h'}, {algorithm: 'HS256'})
+                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, HOTKEY, {expiresIn: '24h'}, {algorithm: 'HS256'})
 
                             userDB.update({
                                 JWT: token,
