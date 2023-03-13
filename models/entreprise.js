@@ -30,7 +30,6 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 'pending'
     },
     code_recup: DataTypes.STRING,
-    employer: DataTypes.INTEGER,
     staff: DataTypes.INTEGER,
     UUID: DataTypes.UUID
   }, {

@@ -1,8 +1,11 @@
 'use strict';
-
+const bcrypt = require('bcryptjs');
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
+
   async up (queryInterface, Sequelize) {
+    const salt = bcrypt.genSaltSync(10)  // Generate a salt
+    const hash = bcrypt.hashSync('testtest', salt)  // Hash the password
     return queryInterface.bulkInsert('entreprises', [
       {
         nom: 'Dupont',
@@ -13,7 +16,7 @@ module.exports = {
         adresse: '22 route des tests',
         num: '0646667686',
         mail: 'taxi@vite.fr',
-        mdp: 'testtest',
+        mdp: hash,
         createdAt: new Date(),
         updatedAt: new  Date()
       }

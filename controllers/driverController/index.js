@@ -73,7 +73,10 @@ function login(req, res) {
     driver.findOne({
         where: {
             mail: mail
-        }
+        },
+        include: [
+            'employer'
+        ]
     }).then((dbDriver) => {
         if (dbDriver) {
             const valid = bcrypt.compareSync(mdp, dbDriver.mdp)
@@ -95,7 +98,10 @@ function getEntreprise(req, res) {
         utilisateur.findOne({
             where: {
                 id: req.user.id
-            }
+            },
+            include: [
+                'employer'
+            ]
         }).then(
             (user) => {
                 if (user) {
@@ -128,6 +134,60 @@ function logout(req, res) {
     )
 }
 
+function addEmployee(req, res) {
+    const {adresse, cp, mail, mdp, nom, prenom, tel, ville} = req.body;
+    if (
+        !adresse ||
+        !cp ||
+        !mail ||
+        !mdp ||
+        !nom ||
+        !prenom ||
+        !tel ||
+        !ville
+    ) {
+        res.status(400).send('Bad request.')
+    }
+
+    const salt = bcrypt.genSaltSync(10)  // Generate a salt
+    const hash = bcrypt.hashSync(mdp, salt)  // Hash the password
+    const driver = db['entreprise']
+    driver.findOne({
+        where: {
+            mail: mail
+        }
+    }).then((dbDriver) =>{
+        if(dbDriver){
+            res.status(400).send('Driver already exists.')
+        }else{
+            driver.create({
+                mail: mail,
+                mdp: hash,
+                nom: nom,
+                prenom: prenom,
+                num: tel,
+                adresse: adresse,
+                ville: ville,
+                cp: cp,
+                employerId: req.user.id,
+                statut: 'confirmed',
+                code_recup: null,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }).then((dbDriver) => {
+                if (dbDriver) {
+                    db['entreprise'].update({staff: 1}, {where: {id: req.user.id}})
+                    res.status(201).send('true')
+                } else {
+                    res.status(400).send('false')
+                }
+            }).catch((err) => {
+                res.status(400).send('Bad request.' + err)
+            })
+        }
+    })
+}
+
 function driverToSend(driver) {
     return {
         id: driver.id,
@@ -149,4 +209,4 @@ function driverToSend(driver) {
     }
 }
 
-module.exports = { createDriver, login, getEntreprise, logout }
+module.exports = { createDriver, login, getEntreprise, logout, addEmployee }

@@ -9,6 +9,14 @@ function makeAssociations(sequelize) {
     course.belongsTo(entreprise)
     course.belongsTo(utilisateur)
 
+    entreprise.belongsTo(entreprise, {
+        as: 'employer',
+        foreignKey: {
+            name: 'employerId',
+            allowNull: true
+        }
+    })
+
     utilisateur.hasMany(wallet)
     wallet.belongsTo(utilisateur)
 }
