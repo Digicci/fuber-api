@@ -27,7 +27,12 @@ module.exports = (sequelize, DataTypes) => {
     endLat: DataTypes.FLOAT,
     endLng: DataTypes.FLOAT,
     driverPrice: DataTypes.FLOAT,
-    commissionPrice: DataTypes.FLOAT
+    commissionPrice: DataTypes.FLOAT,
+    state: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'pending',
+    }
   }, {
     sequelize,
     modelName: 'course',

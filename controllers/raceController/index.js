@@ -36,6 +36,33 @@ function addRace(req,res) {
     })
 }
 
+function getAllPendingByUser(req,res) {
+    const userId = req.user.id
+    db.course.findAll({
+        where: {
+            utilisateurId: userId
+        }
+    }).then(async (races) => {
+        if (races.length > 0 ){
+            //Récupere les infos de l'entreprise et les joint à la course
+            let racesArray = []
+
+            for (const race in races) {
+                const driver = await db.entreprise.findByPk(races[race].entrepriseId)
+                racesArray.push({
+                    race: races[race].dataValues,
+                    driver: driver.dataValues
+                })
+            }
+
+            res.status(200).send(racesArray)
+        } else {
+            res.status(200).send(false)
+        }
+    })
+}
+
 module.exports = {
-    addRace
+    addRace,
+    getAllPendingByUser
 }
