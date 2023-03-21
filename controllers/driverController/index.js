@@ -188,6 +188,19 @@ function addEmployee(req, res) {
     })
 }
 
+function getDriverByNearest(req, res) {
+    const { lat, lng } = req.body
+    if (!lat || !lng) {
+        res.status(400).send('Bad request.')
+
+    }
+    const calc = `6371 * acos(cos(radians(${lat})) * cos(radians(lat)) * cos(radians(lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(lat)))`
+
+    db.sequelize.query(`SELECT *, ${calc} AS distance FROM entreprises HAVING distance < 40 ORDER BY distance ASC`, { type: db.sequelize.QueryTypes.SELECT }).then((drivers) => {
+        res.status(200).send(drivers)
+    })
+}
+
 function driverToSend(driver) {
     return {
         id: driver.id,
@@ -209,4 +222,4 @@ function driverToSend(driver) {
     }
 }
 
-module.exports = { createDriver, login, getEntreprise, logout, addEmployee }
+module.exports = { createDriver, login, getEntreprise, logout, addEmployee, getDriverByNearest }
