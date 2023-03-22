@@ -196,7 +196,15 @@ function getDriverByNearest(req, res) {
     }
     const calc = `6371 * acos(cos(radians(${lat})) * cos(radians(lat)) * cos(radians(lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(lat)))`
 
-    db.sequelize.query(`SELECT *, ${calc} AS distance FROM entreprises HAVING distance < 40 ORDER BY distance ASC`, { type: db.sequelize.QueryTypes.SELECT }).then((drivers) => {
+    db.sequelize.query(`
+    SELECT entreprises.id, img_path, places, prix, model, marque, commission, ${calc} AS distance 
+    FROM entreprises 
+    INNER JOIN vehicules 
+    ON vehicules.entrepriseId = entreprises.id 
+    HAVING distance < 40 
+    ORDER BY distance ASC`,
+        { type: db.sequelize.QueryTypes.SELECT }
+    ).then((drivers) => {
         res.status(200).send(drivers)
     })
 }

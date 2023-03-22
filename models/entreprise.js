@@ -27,6 +27,11 @@ module.exports = (sequelize, DataTypes) => {
     mdp: DataTypes.STRING,
     lat: DataTypes.FLOAT,
     lng: DataTypes.FLOAT,
+    prix: DataTypes.FLOAT,
+    commission: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    },
     statut: {
         type: DataTypes.STRING,
         defaultValue: 'pending'
