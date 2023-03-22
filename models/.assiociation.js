@@ -1,16 +1,21 @@
 function makeAssociations(sequelize) {
-    const {entreprise, offre, course, utilisateur, wallet, vehicule} = sequelize.models
+    const {entreprise, offre, course, utilisateur, vehicule} = sequelize.models
 
     entreprise.hasMany(offre)
-    offre.belongsTo(entreprise)
 
     utilisateur.hasMany(course)
     entreprise.hasMany(course)
-    course.belongsTo(entreprise)
     course.belongsTo(utilisateur)
+    course.belongsTo(entreprise)
 
-    entreprise.hasMany(vehicule)
-    vehicule.belongsTo(entreprise)
+    entreprise.hasOne(vehicule)
+    vehicule.belongsTo(entreprise, {
+        as: 'entreprise',
+        foreignKey: {
+            name: 'entrepriseId',
+            allowNull: false
+        }
+    })
 
     entreprise.belongsTo(entreprise, {
         as: 'employer',
@@ -20,8 +25,6 @@ function makeAssociations(sequelize) {
         }
     })
 
-    utilisateur.hasMany(wallet)
-    wallet.belongsTo(utilisateur)
 }
 
 module.exports = {makeAssociations}
