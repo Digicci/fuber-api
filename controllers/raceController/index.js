@@ -4,6 +4,7 @@ const db = require('../../models/index')
 function addRace(req,res) {
     const {destination, driverPrice, commissionPrice, promo, driverId, total, pm} = req.body
     const id = req.user.id
+    const validNumber = Math.random() * 9999
     db.utilisateur.findByPk(id).then((user) => {
       if (user.stripe_id && pm) {
         confirmPaiement(pm, user.stripe_id, total).then((respond) => {
@@ -20,7 +21,8 @@ function addRace(req,res) {
                   endLng: destination.endLng,
                   driverPrice: driverPrice,
                   commissionPrice: commissionPrice,
-                  utilisateurId: id
+                  utilisateurId: id,
+                  validNumber: validNumber,
               }).then((course) => {
                   res.status(200).send({course, respond, message: 'success'})
               }).catch((err) => {
