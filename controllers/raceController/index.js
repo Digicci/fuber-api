@@ -43,7 +43,8 @@ function getAllPendingByUser(req,res) {
     const {entreprise, vehicule} = db
     db.course.findAll({
         where: {
-            utilisateurId: userId
+            utilisateurId: userId,
+            state: 'pending'
         },
         include: {
             model: entreprise,
@@ -61,7 +62,32 @@ function getAllPendingByUser(req,res) {
     })
 }
 
+function getAllDoneByUser(req,res) {
+    const userId = req.user.id
+    const {entreprise, vehicule} = db
+    db.course.findAll({
+        where: {
+            utilisateurId: userId,
+            state: 'done'
+        },
+        include: {
+            model: entreprise,
+            attributes: ['nom', 'prenom', 'num', 'mail'],
+            include: {
+                model: vehicule,
+            }
+        }
+    }).then(async (races) => {
+        if (races.length > 0) {
+            res.status(200).send(races)
+        } else {
+            res.status(200).send(false)
+        }
+    })
+}
+
 module.exports = {
     addRace,
-    getAllPendingByUser
+    getAllPendingByUser,
+    getAllDoneByUser
 }
