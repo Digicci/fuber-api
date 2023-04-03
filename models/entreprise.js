@@ -25,12 +25,19 @@ module.exports = (sequelize, DataTypes) => {
     num: DataTypes.STRING,
     mail: DataTypes.STRING,
     mdp: DataTypes.STRING,
+    lat: DataTypes.FLOAT,
+    lng: DataTypes.FLOAT,
+    prix: DataTypes.FLOAT,
+    commission: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0
+    },
     statut: {
         type: DataTypes.STRING,
         defaultValue: 'pending'
     },
     code_recup: DataTypes.STRING,
-    employer: DataTypes.INTEGER,
+    staff: DataTypes.INTEGER,
     UUID: DataTypes.UUID
   }, {
     sequelize,

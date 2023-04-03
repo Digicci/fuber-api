@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     endLng: DataTypes.FLOAT,
     driverPrice: DataTypes.FLOAT,
     commissionPrice: DataTypes.FLOAT,
+    validNumber: DataTypes.INTEGER,
     state: {
       type: DataTypes.STRING,
       allowNull: false,

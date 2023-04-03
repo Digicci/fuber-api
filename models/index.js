@@ -41,7 +41,7 @@ Object.keys(db).forEach(modelName => {
   }).catch((error) =>{
     db[modelName].sync({
       logging: false,
-      alter: false
+      alter: false,
     }).then(() => {
       console.log(`table ${modelName} synced`);
     })

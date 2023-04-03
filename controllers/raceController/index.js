@@ -4,6 +4,7 @@ const db = require('../../models/index')
 function addRace(req,res) {
     const {destination, driverPrice, commissionPrice, promo, driverId, total, pm} = req.body
     const id = req.user.id
+    const validNumber = Math.random() * 9999
     db.utilisateur.findByPk(id).then((user) => {
       if (user.stripe_id && pm) {
         confirmPaiement(pm, user.stripe_id, total).then((respond) => {
@@ -20,7 +21,8 @@ function addRace(req,res) {
                   endLng: destination.endLng,
                   driverPrice: driverPrice,
                   commissionPrice: commissionPrice,
-                  utilisateurId: id
+                  utilisateurId: id,
+                  validNumber: validNumber,
               }).then((course) => {
                   res.status(200).send({course, respond, message: 'success'})
               }).catch((err) => {
@@ -38,24 +40,46 @@ function addRace(req,res) {
 
 function getAllPendingByUser(req,res) {
     const userId = req.user.id
+    const {entreprise, vehicule} = db
     db.course.findAll({
         where: {
-            utilisateurId: userId
+            utilisateurId: userId,
+            state: 'pending'
+        },
+        include: {
+            model: entreprise,
+            attributes: ['nom', 'prenom', 'num', 'mail'],
+            include: {
+                model: vehicule,
+            }
         }
     }).then(async (races) => {
         if (races.length > 0 ){
-            //Récupere les infos de l'entreprise et les joint à la course
-            let racesArray = []
+            res.status(200).send(races)
+        } else {
+            res.status(200).send(false)
+        }
+    })
+}
 
-            for (const race in races) {
-                const driver = await db.entreprise.findByPk(races[race].entrepriseId)
-                racesArray.push({
-                    race: races[race].dataValues,
-                    driver: driver.dataValues
-                })
+function getAllDoneByUser(req,res) {
+    const userId = req.user.id
+    const {entreprise, vehicule} = db
+    db.course.findAll({
+        where: {
+            utilisateurId: userId,
+            state: 'done'
+        },
+        include: {
+            model: entreprise,
+            attributes: ['nom', 'prenom', 'num', 'mail'],
+            include: {
+                model: vehicule,
             }
-
-            res.status(200).send(racesArray)
+        }
+    }).then(async (races) => {
+        if (races.length > 0) {
+            res.status(200).send(races)
         } else {
             res.status(200).send(false)
         }
@@ -64,5 +88,6 @@ function getAllPendingByUser(req,res) {
 
 module.exports = {
     addRace,
-    getAllPendingByUser
+    getAllPendingByUser,
+    getAllDoneByUser
 }
