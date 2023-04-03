@@ -117,6 +117,31 @@ function getEntreprise(req, res) {
     }
 }
 
+function getTeam(req, res) {
+    const utilisateur = db['entreprise']
+    if(req.user){
+        utilisateur.findAll({
+            where: {
+                employerId: req.user.id
+            },
+            include: [
+                'vehicule'
+            ]
+        }).then(
+            (users) => {
+                if (users) {
+                    res.status(200).send(users)
+                } else {
+                    res.status(400).send('Bad request.')
+                }
+            }
+        )
+    }
+    else {
+        res.status(400).send('Bad request.')
+    }
+}
+
 function logout(req, res) {
     const utilisateur = db['entreprise']
     utilisateur.findOne({
@@ -230,4 +255,4 @@ function driverToSend(driver) {
     }
 }
 
-module.exports = { createDriver, login, getEntreprise, logout, addEmployee, getDriverByNearest }
+module.exports = { createDriver, login, getEntreprise, logout, addEmployee, getDriverByNearest, getTeam }
