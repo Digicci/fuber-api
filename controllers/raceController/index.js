@@ -86,8 +86,34 @@ function getAllDoneByUser(req,res) {
     })
 }
 
+function getNumberOfRaceAccomplishedById(req,res) {
+    const {id} = req.params
+    db.course.count({
+        where: {
+            entrepriseId: id,
+            state: 'done'
+        }
+    }).then((count) => {
+        res.status(200).send({count})
+    })
+}
+
+function getNumberOfRaceAccomplished(req,res) {
+    const id = req.user.id
+    db.course.count({
+        where: {
+            entrepriseId: id,
+            state: 'done'
+        }
+    }).then((count) => {
+        res.status(200).send({count})
+    })
+}
+
 module.exports = {
     addRace,
     getAllPendingByUser,
-    getAllDoneByUser
+    getAllDoneByUser,
+    getNumberOfRaceAccomplishedById,
+    getNumberOfRaceAccomplished
 }

@@ -19,6 +19,10 @@ function makeAssociations(sequelize) {
 
     entreprise.belongsTo(entreprise, {
         as: 'employer',
+    })
+
+    entreprise.hasMany(entreprise, {
+        as: 'employes',
         foreignKey: {
             name: 'employerId',
             allowNull: true

@@ -8,6 +8,6 @@ const driverRoutes = require('./routes/driver');
 router.use('/user', userRoutes);
 router.use('/security/csrf', csrfRoutes);
 router.use('/race', raceRoutes);
-router.use('/entreprise', driverRoutes);
+router.use('/entreprise/', driverRoutes);
 
 module.exports = router

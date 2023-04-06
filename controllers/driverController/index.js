@@ -75,7 +75,14 @@ function login(req, res) {
             mail: mail
         },
         include: [
-            'employer'
+            {
+                model: db['entreprise'],
+                as: 'employes',
+                include: [
+                    'vehicule'
+                ]
+            },
+            'vehicule'
         ]
     }).then((dbDriver) => {
         if (dbDriver) {
@@ -100,12 +107,19 @@ function getEntreprise(req, res) {
                 id: req.user.id
             },
             include: [
-                'employer'
+                {
+                    model: db['entreprise'],
+                    as: 'employes',
+                    include: [
+                        'vehicule'
+                    ]
+                },
+                'vehicule'
             ]
         }).then(
             (user) => {
                 if (user) {
-                    res.status(200).send(driverToSend(user))
+                    res.status(200).send(user)
                 } else {
                     res.status(400).send('Bad request.')
                 }
