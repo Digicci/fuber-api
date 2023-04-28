@@ -57,7 +57,7 @@ function getAllPendingByUser(req,res) {
         if (races.length > 0 ){
             res.status(200).send(races)
         } else {
-            res.status(200).send(false)
+            res.status(200).send([])
         }
     })
 }
@@ -100,13 +100,24 @@ function getNumberOfRaceAccomplishedById(req,res) {
 
 function getNumberOfRaceAccomplished(req,res) {
     const id = req.user.id
-    db.course.count({
+    const {entreprise} = db
+    entreprise.findAll({
         where: {
-            entrepriseId: id,
-            state: 'done'
+            employerId: id
         }
-    }).then((count) => {
-        res.status(200).send({count})
+    }).then((entreprises) => {
+        const ids = entreprises.map((entreprise) => {
+            return entreprise.id
+        })
+        ids.push(id)
+        db.course.count({
+            where: {
+                entrepriseId: ids,
+                state: 'done'
+            }
+        }).then((count) => {
+            res.status(200).send({count})
+        })
     })
 }
 

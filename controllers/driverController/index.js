@@ -248,25 +248,4 @@ function getDriverByNearest(req, res) {
     })
 }
 
-function driverToSend(driver) {
-    return {
-        id: driver.id,
-        nom: driver.nom,
-        prenom: driver.prenom,
-        nom_commercial: driver.nom_commercial,
-        siret: driver.siret,
-        tva: driver.tva,
-        adresse: driver.adresse,
-        cp: driver.cp,
-        ville: driver.ville,
-        num: driver.num,
-        mail: driver.mail,
-        statut: driver.statut,
-        code_recup: driver.code_recup,
-        employer: driver.employer,
-        staff: driver.staff,
-        UUID: driver.UUID
-    }
-}
-
 module.exports = { createDriver, login, getEntreprise, logout, addEmployee, getDriverByNearest, getTeam }
