@@ -226,4 +226,4 @@ function getBeneficeByPeriod(req, res) {
     })
 }
 
-module.exports = { getCA };
+module.exports = { getCA, getBenefice, getCAByPeriod, getBeneficeByPeriod };
