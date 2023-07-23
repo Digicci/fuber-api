@@ -139,7 +139,8 @@ function getTeam(req, res) {
                 employerId: req.user.id
             },
             include: [
-                'vehicule'
+                'vehicule',
+                'courses'
             ]
         }).then(
             (users) => {
@@ -174,7 +175,7 @@ function logout(req, res) {
 }
 
 function addEmployee(req, res) {
-    const {adresse, cp, mail, mdp, nom, prenom, tel, ville} = req.body;
+    const {adresse, cp, mail, mdp, nom, prenom, tel, ville, immatriculation, marque, modele, place, car} = req.body;
     if (
         !adresse ||
         !cp ||
@@ -183,7 +184,12 @@ function addEmployee(req, res) {
         !nom ||
         !prenom ||
         !tel ||
-        !ville
+        !ville ||
+        !immatriculation ||
+        !marque ||
+        !modele ||
+        !place ||
+        !car
     ) {
         res.status(400).send('Bad request.')
     }
@@ -191,6 +197,7 @@ function addEmployee(req, res) {
     const salt = bcrypt.genSaltSync(10)  // Generate a salt
     const hash = bcrypt.hashSync(mdp, salt)  // Hash the password
     const driver = db['entreprise']
+    const vehicule = db['vehicule']
     driver.findOne({
         where: {
             mail: mail
@@ -215,8 +222,18 @@ function addEmployee(req, res) {
                 updatedAt: new Date()
             }).then((dbDriver) => {
                 if (dbDriver) {
-                    db['entreprise'].update({staff: 1}, {where: {id: req.user.id}})
-                    res.status(201).send('true')
+                    vehicule.create({
+                        immatriculation: immatriculation,
+                        marque: marque,
+                        model: modele,
+                        places: place,
+                        type: car,
+                        entrepriseId: dbDriver.id,
+                    }).then((dbVehicule) => {
+                        db['entreprise'].update({staff: 1}, {where: {id: req.user.id}}).then(() => {
+                            res.status(201).send('true')
+                        })
+                    })
                 } else {
                     res.status(400).send('false')
                 }
