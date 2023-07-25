@@ -27,26 +27,46 @@ fs
     db[model.name] = model;
   });
 
+// TODO : resolve deadlock on sync (sequelize)
 
 makeAssociations(sequelize)
-Object.keys(db).forEach(modelName => {
+/*Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
   db[modelName].sync({
-    logging: false,
+    logging: true,
     alter: true
   }).then(() => {
     console.log(`table ${modelName} synced`)
   }).catch((error) =>{
+    console.log(error)
     db[modelName].sync({
       logging: false,
-      alter: false,
+      alter: true,
     }).then(() => {
-      console.log(`table ${modelName} synced`);
+      console.log(`table ${modelName} not synced`);
     })
   })
-});
+});*/
+
+
+Object.keys(db).forEach(async (modelName) => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+
+  try {
+    await db[modelName].sync({
+      logging: false,
+      alter: true,
+    })
+    console.log(`table ${modelName} synced`)
+  } catch (error) {
+    console.log(`table ${modelName} not synced`)
+    console.log(error)
+  }
+})
 
 
 db.sequelize = sequelize;

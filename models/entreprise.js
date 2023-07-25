@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
     lat: DataTypes.FLOAT,
     lng: DataTypes.FLOAT,
     prix: DataTypes.FLOAT,
+    socket_token: {
+      type: DataTypes.STRING,
+      defaultValue: null
+    },
     commission: {
       type: DataTypes.FLOAT,
       defaultValue: 0
