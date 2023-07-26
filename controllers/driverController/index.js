@@ -3,6 +3,43 @@ const bcrypt = require('bcryptjs');  // Import bcryptjs
 const jwt = require('jsonwebtoken');  // Import jwt
 const HOTKEY = "secret"  // Create a secret key
 
+//Clean driver info before sending it to the client
+
+function cleanDriver(driver) {
+    const {
+        nom,
+        prenom,
+        num,
+        mail,
+        nom_commercial,
+        siret,
+        adresse,
+        ville,
+        cp,
+        pays,
+        staff,
+        statut,
+        employes,
+        vehicule
+    } = driver
+    return {
+        nom: nom,
+        prenom: prenom,
+        num: num,
+        mail: mail,
+        nom_commercial: nom_commercial,
+        siret: siret,
+        adresse: adresse,
+        ville: ville,
+        cp: cp,
+        pays: pays,
+        staff: staff,
+        statut: statut,
+        employes: employes,
+        vehicule: vehicule
+    }
+}
+
 // Create a new driver account with pending status
 
 function createDriver(req, res) {
@@ -89,7 +126,7 @@ function login(req, res) {
             const valid = bcrypt.compareSync(mdp, dbDriver.mdp)
             if (valid) {
                 const token = jwt.sign({id: dbDriver.id}, HOTKEY, {algorithm: 'HS256'}, {expiresIn: '24h'})
-                res.status(200).send({auth: true, token: token, driver: dbDriver})
+                res.status(200).send({auth: true, token: token, driver: cleanDriver(dbDriver)})
             } else {
                 res.status(401).send({auth: false, token: null, message: 'Invalid connexion informations'})
             }
@@ -119,7 +156,7 @@ function getEntreprise(req, res) {
         }).then(
             (user) => {
                 if (user) {
-                    res.status(200).send(user)
+                    res.status(200).send(cleanDriver(user))
                 } else {
                     res.status(400).send('Bad request.')
                 }
