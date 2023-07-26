@@ -4,7 +4,6 @@ const {
     createDriver,
     login,
     getEntreprise,
-    logout,
     addEmployee,
     getTeam,
     updateDriver
@@ -25,7 +24,6 @@ router.post('/signup', createDriver)
 router.post('/login', login)
 router.put('/update', verifyToken, updateDriver)
 router.get('/get',verifyToken, getEntreprise)
-router.get('/logout', verifyToken, logout)
 router.post('/register', verifyToken, addEmployee)
 router.get('/team', verifyToken, getTeam)
 router.get('/stats/getNumberOfRaceById/:id', verifyToken, getNumberOfRaceAccomplishedById)

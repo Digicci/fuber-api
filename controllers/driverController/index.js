@@ -155,23 +155,6 @@ function getTeam(req, res) {
     }
 }
 
-function logout(req, res) {
-    const utilisateur = db['entreprise']
-    utilisateur.findOne({
-        where: {
-            id: req.user.id
-        }
-    }).then(
-        (user) => {
-            if (user) {
-                res.status(200).send('true')
-            } else {
-                res.status(400).send('Bad request.')
-            }
-        }
-    )
-}
-
 function addEmployee(req, res) {
     const {adresse, cp, mail, mdp, nom, prenom, tel, ville, immatriculation, marque, modele, place, car} = req.body;
     if (
