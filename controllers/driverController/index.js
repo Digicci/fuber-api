@@ -289,7 +289,6 @@ module.exports = {
     createDriver,
     login,
     getEntreprise,
-    logout,
     addEmployee,
     getDriverByNearest,
     getTeam,
