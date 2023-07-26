@@ -6,13 +6,37 @@ const HOTKEY = "secret"  // Create a secret key
 //Clean driver info before sending it to the client
 
 function cleanDriver(driver) {
+    const {
+        nom,
+        prenom,
+        num,
+        mail,
+        nom_commercial,
+        siret,
+        adresse,
+        ville,
+        cp,
+        pays,
+        staff,
+        statut,
+        employes,
+        vehicule
+    } = driver
     return {
-        ...driver,
-        mdp: undefined,
-        code_recup: undefined,
-        createdAt: undefined,
-        updatedAt: undefined,
-        socket_token: undefined
+        nom: nom,
+        prenom: prenom,
+        num: num,
+        mail: mail,
+        nom_commercial: nom_commercial,
+        siret: siret,
+        adresse: adresse,
+        ville: ville,
+        cp: cp,
+        pays: pays,
+        staff: staff,
+        statut: statut,
+        employes: employes,
+        vehicule: vehicule
     }
 }
 
