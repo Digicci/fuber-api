@@ -6,7 +6,7 @@ const HOTKEY = "secret"  // Create a secret key
 // Create a new driver account with pending status
 
 function createDriver(req, res) {
-    const { mail, mdp, nom, prenom, tel, nomCommercial, siret, ville, cp, adresse, staff } = req.body
+    const {mail, mdp, nom, prenom, tel, nomCommercial, siret, ville, cp, adresse, staff} = req.body
     if (
         !mail ||
         !mdp ||
@@ -30,10 +30,10 @@ function createDriver(req, res) {
         where: {
             mail: mail
         }
-    }).then((dbDriver) =>{
-        if(dbDriver){
+    }).then((dbDriver) => {
+        if (dbDriver) {
             res.status(400).send('Driver already exists.')
-        }else{
+        } else {
             driver.create({
                 mail: mail,
                 mdp: hash,
@@ -65,7 +65,7 @@ function createDriver(req, res) {
 }
 
 function login(req, res) {
-    const { mail, mdp } = req.body
+    const {mail, mdp} = req.body
     if (!mail || !mdp) {
         res.status(400).send('Bad request.')
     }
@@ -88,10 +88,10 @@ function login(req, res) {
         if (dbDriver) {
             const valid = bcrypt.compareSync(mdp, dbDriver.mdp)
             if (valid) {
-                const token = jwt.sign({ id: dbDriver.id }, HOTKEY, {algorithm: 'HS256'}, { expiresIn: '24h' })
-                res.status(200).send({ auth: true, token: token, driver: dbDriver })
+                const token = jwt.sign({id: dbDriver.id}, HOTKEY, {algorithm: 'HS256'}, {expiresIn: '24h'})
+                res.status(200).send({auth: true, token: token, driver: dbDriver})
             } else {
-                res.status(401).send({ auth: false, token: null, message: 'Invalid connexion informations' })
+                res.status(401).send({auth: false, token: null, message: 'Invalid connexion informations'})
             }
         } else {
             res.status(404).send('Driver not found.')
@@ -101,7 +101,7 @@ function login(req, res) {
 
 function getEntreprise(req, res) {
     const utilisateur = db['entreprise']
-    if(req.user){
+    if (req.user) {
         utilisateur.findOne({
             where: {
                 id: req.user.id
@@ -125,15 +125,14 @@ function getEntreprise(req, res) {
                 }
             }
         )
-    }
-    else {
+    } else {
         res.status(400).send('Bad request.')
     }
 }
 
 function getTeam(req, res) {
     const utilisateur = db['entreprise']
-    if(req.user){
+    if (req.user) {
         utilisateur.findAll({
             where: {
                 employerId: req.user.id
@@ -151,8 +150,7 @@ function getTeam(req, res) {
                 }
             }
         )
-    }
-    else {
+    } else {
         res.status(400).send('Bad request.')
     }
 }
@@ -202,10 +200,10 @@ function addEmployee(req, res) {
         where: {
             mail: mail
         }
-    }).then((dbDriver) =>{
-        if(dbDriver){
+    }).then((dbDriver) => {
+        if (dbDriver) {
             res.status(400).send('Driver already exists.')
-        }else{
+        } else {
             driver.create({
                 mail: mail,
                 mdp: hash,
@@ -245,7 +243,7 @@ function addEmployee(req, res) {
 }
 
 function getDriverByNearest(req, res) {
-    const { lat, lng } = req.body
+    const {lat, lng} = req.body
     if (!lat || !lng) {
         res.status(400).send('Bad request.')
 
@@ -253,17 +251,64 @@ function getDriverByNearest(req, res) {
     const calc = `6371 * acos(cos(radians(${lat})) * cos(radians(lat)) * cos(radians(lng) - radians(${lng})) + sin(radians(${lat})) * sin(radians(lat)))`
 
     db.sequelize.query(`
-    SELECT entreprises.id, img_path, places, prix, model, marque, commission, ${calc} AS distance 
-    FROM entreprises 
-    INNER JOIN vehicules 
-    ON vehicules.entrepriseId = entreprises.id 
-    HAVING distance < 20 
-    AND socket_token != false
-    ORDER BY distance ASC`,
-        { type: db.sequelize.QueryTypes.SELECT }
+                SELECT entreprises.id,
+                       img_path,
+                       places,
+                       prix,
+                       model,
+                       marque,
+                       commission,
+                       ${calc} AS distance
+                FROM entreprises
+                         INNER JOIN vehicules
+                                    ON vehicules.entrepriseId = entreprises.id
+                HAVING distance < 20
+                   AND socket_token != false
+                ORDER BY distance ASC`,
+        {type: db.sequelize.QueryTypes.SELECT}
     ).then((drivers) => {
         res.status(200).send(drivers)
     })
 }
 
-module.exports = { createDriver, login, getEntreprise, logout, addEmployee, getDriverByNearest, getTeam }
+function updateDriver(req, res) {
+    const {nom, prenom, num} = req.body
+    if (!nom || !prenom || !num) {
+        res.status(400).send('Bad request.')
+    }
+
+    const entreprise = db['entreprise']
+    const id = req.user.id
+    entreprise.findByPk(id).then((driver) => {
+        driver.update({
+            nom: nom,
+            prenom: prenom,
+            num: num
+        }).then((driver) => {
+            if (
+                driver.nom === nom
+                && driver.prenom === prenom
+                && driver.num === num
+            ) {
+                res.status(200).send({
+                    nom: driver.nom,
+                    prenom: driver.prenom,
+                    num: driver.num
+                })
+            }
+        }).catch((err) => {
+            res.status(401).send(`an error occured : ${err}`)
+        })
+    })
+}
+
+module.exports = {
+    createDriver,
+    login,
+    getEntreprise,
+    logout,
+    addEmployee,
+    getDriverByNearest,
+    getTeam,
+    updateDriver
+}
