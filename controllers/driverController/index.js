@@ -148,7 +148,8 @@ function getEntreprise(req, res) {
                     model: db['entreprise'],
                     as: 'employes',
                     include: [
-                        'vehicule'
+                        'vehicule',
+                        'courses'
                     ]
                 },
                 'vehicule'
