@@ -149,7 +149,26 @@ function getEntreprise(req, res) {
                     as: 'employes',
                     include: [
                         'vehicule',
-                        'courses'
+                        {
+                            model: db['course'],
+                            as: 'courses',
+                            include: [
+                                {
+                                    model: db['utilisateur'],
+                                    as: 'utilisateur',
+                                    attributes: {
+                                        exclude: [
+                                            'mdp',
+                                            'code_recup',
+                                            'JWT',
+                                            'stripe_id',
+                                            'JWT_secret',
+                                            'UUID'
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
                     ]
                 },
                 'vehicule'
@@ -177,7 +196,26 @@ function getTeam(req, res) {
             },
             include: [
                 'vehicule',
-                'courses'
+                {
+                    model: db['course'],
+                    as: 'courses',
+                    include: [
+                        {
+                            model: db['utilisateur'],
+                            as: 'utilisateur',
+                            attributes: {
+                                exclude: [
+                                    'mdp',
+                                    'code_recup',
+                                    'JWT',
+                                    'stripe_id',
+                                    'JWT_secret',
+                                    'UUID'
+                                ]
+                            }
+                        }
+                    ]
+                }
             ]
         }).then(
             (users) => {
@@ -249,7 +287,7 @@ function addEmployee(req, res) {
                         type: car,
                         entrepriseId: dbDriver.id,
                     }).then((dbVehicule) => {
-                        db['entreprise'].update({staff: 1}, {where: {id: req.user.id}}).then(() => {
+                        db['entreprise'].update({staff: +1}, {where: {id: req.user.id}}).then(() => {
                             res.status(201).send('true')
                         })
                     })
