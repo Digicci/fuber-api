@@ -361,6 +361,42 @@ function updateDriver(req, res) {
     })
 }
 
+function addVehiculeToSelf(req, res) {
+    const {
+        marque,
+        immatriculation,
+        modele,
+        places,
+        car
+    } = req.body;
+
+    if (!marque || !immatriculation || !modele || !places || !car) {
+        res.status(400).send('Malformed request.')
+    }
+    const {id} = req.user
+    const vehicule = db['vehicule'];
+
+    vehicule.create({
+        immatriculation,
+        places,
+        type: car,
+        model: modele,
+        marque,
+        img_path: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        entrepriseId: id
+    }).then((newVehicule) => {
+        if(newVehicule) {
+            res.status(200).send(true)
+        } else {
+            res.status(400).send(false)
+        }
+    }).catch((e) => {
+        res.status(400).send(e)
+    })
+}
+
 module.exports = {
     createDriver,
     login,
@@ -368,5 +404,6 @@ module.exports = {
     addEmployee,
     getDriverByNearest,
     getTeam,
-    updateDriver
+    updateDriver,
+    addVehiculeToSelf
 }
