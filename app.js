@@ -8,14 +8,15 @@ const cookieSession = require('cookie-session');
 const session = require('express-session');
 const csurf = require('tiny-csrf')
 const csrfSecret = "explicarioratiocumdeleniteseruis"
+const dotenv = require('dotenv')
 
-
+dotenv.config()
 const app = express()
 
 app.db = db
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: process.env.APP_ORIGIN || 'http://localhost:3000',
     credentials: true,
     optionsSuccessStatus: 200
 }

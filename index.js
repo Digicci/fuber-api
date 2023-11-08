@@ -1,7 +1,11 @@
 const app = require("./app")
 const http = require('http')
+const dotenv = require('dotenv')
+dotenv.config()
 
-const port = normalizePort(process.env.PORT || '8000')
+//WEB SERVER DEFINITION
+
+const port = normalizePort(process.env.APP_PORT || '8000')
 app.set('port', port)
 
 const server = http.createServer(app)
@@ -16,9 +20,16 @@ app.db.sequelize.authenticate({logging: false}).then(() => {
         console.error('\nUnable to connect to the database:\n\n\n', err);
     })
 
+//END WEB SERVER DEFINITION
+
+//WEB SOCKET DEFINITION
+
+//TODO : The web socket listener will be here
+
+//END WEB SOCKET DEFINITION
 
 function normalizePort(val) {
-    var port = parseInt(val, 10)
+    const port = parseInt(val, 10)
 
     if (isNaN(port)) {
         // named pipe
@@ -38,7 +49,7 @@ function onError(error) {
         throw error
     }
 
-    var bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port
+    const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
@@ -47,7 +58,7 @@ function onError(error) {
             process.exit(1)
             break
         case 'EADDRINUSE':
-            console.error(bind + ' is already in use')
+            console.error(bind + ' is already in use, please use an other port or shutdown the running instance')
             process.exit(1)
             break
         default:
@@ -56,7 +67,7 @@ function onError(error) {
 }
 
 function onListening() {
-    var addr = server.address()
-    var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
+    const addr = server.address()
+    const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
     console.log('Listening on ' + bind)
 }
