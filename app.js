@@ -16,7 +16,7 @@ const app = express()
 app.db = db
 
 const corsOptions = {
-    origin: process.env.APP_ORIGIN || 'http://localhost:3000',
+    origin: process.env.APP_ORIGIN || ['http://localhost:3000', 'http://192.168.1.35:3000'],
     credentials: true,
     optionsSuccessStatus: 200
 }
