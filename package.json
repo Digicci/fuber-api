@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./index.js",
-    "seed": "npx sequelize-cli db:seed:all"
+    "seed": "npx sequelize-cli db:seed:all",
+    "dev": "nodemon ./index.js"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
     "mysql2": "^2.3.3",
     "process": "^0.11.10",
     "sequelize": "^6.26.0",
+    "socket.io": "^4.7.2",
     "stripe": "^11.7.0",
     "tiny-csrf": "^1.1.3"
   },

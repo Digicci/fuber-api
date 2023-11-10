@@ -20,7 +20,8 @@ function cleanDriver(driver) {
         staff,
         statut,
         employes,
-        vehicule
+        vehicule,
+        id
     } = driver
     return {
         nom: nom,
@@ -36,7 +37,8 @@ function cleanDriver(driver) {
         staff: staff,
         statut: statut,
         employes: employes,
-        vehicule: vehicule
+        vehicule: vehicule,
+        id: id
     }
 }
 
@@ -317,16 +319,37 @@ function getDriverByNearest(req, res) {
                        model,
                        marque,
                        commission,
-                       ${calc} AS distance
+                       ${calc} AS distance,
+                       socket_token,
+                       nom,
+                       prenom,
+                       vehicules.*
                 FROM entreprises
                          INNER JOIN vehicules
                                     ON vehicules.entrepriseId = entreprises.id
                 HAVING distance < 20
-                   AND socket_token != false
+                   AND socket_token IS NOT NULL
                 ORDER BY distance ASC`,
         {type: db.sequelize.QueryTypes.SELECT}
     ).then((drivers) => {
         res.status(200).send(drivers)
+    })
+}
+
+function updateDriverLocation(driverId, location) {
+    const entreprise = db['entreprise'];
+    return entreprise.findByPk(driverId).then((driver) => {
+        if (driver) {
+            return driver.update({'lat': location.lat, 'lng': location.lng})
+                .then(() => {
+                    return true
+                })
+                .catch((err) => {
+                    console.log(err)
+                    return false
+                })
+        }
+        return false
     })
 }
 
@@ -361,6 +384,18 @@ function updateDriver(req, res) {
     })
 }
 
+function setIsOnline(id, socket_id = null) {
+    const entreprise = db['entreprise'];
+    return entreprise.findByPk(id).then((driver) => {
+        return driver.update({'socket_token': socket_id}).then(() => {
+            return socket_id !== null
+        })
+    }).catch((err) => {
+        console.log(err)
+        return false
+    })
+}
+
 function addVehiculeToSelf(req, res) {
     const {
         marque,
@@ -387,13 +422,27 @@ function addVehiculeToSelf(req, res) {
         updatedAt: new Date(),
         entrepriseId: id
     }).then((newVehicule) => {
-        if(newVehicule) {
+        if (newVehicule) {
             res.status(200).send(true)
         } else {
             res.status(400).send(false)
         }
     }).catch((e) => {
         res.status(400).send(e)
+    })
+}
+
+
+function getDriverSocketTokenById(driverId) {
+    const entreprise = db['entreprise'];
+    return entreprise.findByPk(driverId).then((driver) => {
+        if(driver) {
+            console.log('driver found');
+            return driver.socket_token ? driver.socket_token : null
+        } else {
+            console.log('driver not found');
+            return null
+        }
     })
 }
 
@@ -405,5 +454,8 @@ module.exports = {
     getDriverByNearest,
     getTeam,
     updateDriver,
-    addVehiculeToSelf
+    addVehiculeToSelf,
+    setIsOnline,
+    updateDriverLocation,
+    getDriverSocketTokenById
 }
