@@ -36,7 +36,7 @@ function connectAdmin(req,res){
 function logoutAdmin(req,res){
   const admins = db['admins']
   admins.findOne({where:{
-    id:req.body.id
+    id:req.user.id
     }
   }).then(
     (admin) => {
