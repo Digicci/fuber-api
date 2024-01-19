@@ -13,7 +13,7 @@ const verifyToken = (req, res, next) => {
 
     const token = extractBearer(req)
     if (token) {
-        jwt.verify(token, HOTKEY, {algorithm: 'HS256'},(err, decoded) => {
+        jwt.verify(token, process.env.JWT_SECRET, {algorithm: 'HS256'},(err, decoded) => {
             if (err) {
                 res.status(401).send('Unauthorized')
             } else {

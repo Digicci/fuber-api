@@ -9,8 +9,8 @@ const adminRoutes = require('./routes/admin')
 router.use('/user', userRoutes);
 router.use('/security/csrf', csrfRoutes);
 router.use('/race', raceRoutes);
-router.use('/entreprise/', driverRoutes);
-router.use('/admin/', adminRoutes);
+router.use('/entreprise', driverRoutes);
+router.use('/admin', adminRoutes);
 
 
 module.exports = router
