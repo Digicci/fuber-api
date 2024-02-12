@@ -70,22 +70,7 @@ function getAdmin(res,req){
   )
 }
 
-function getEntreprise(res,req){
-  const entreprises = db['entreprise']
-  entreprises.findAll({
-    where: {
-      id: req.user.id
-    }
-  }).then(
-    (entreprise) => {
-      if(entreprise){
-        res.status(200).json(entrepriseToSend(entreprise))
-      } else {
-        res.status(401).json({message: 'Bad request'})
-      }
-    }
-  )
-}
+
 
 function adminToSend(admin){
   return {
@@ -97,25 +82,6 @@ function adminToSend(admin){
   };
 }
 
-function entrepriseToSend(entreprise){
-  return{
-    id: entreprise.id,
-    nom: entreprise.nom,
-    prenom: entreprise.prenom,
-    nom_commercial: entreprise.nom_commercial,
-    siret: entreprise.siret,
-    tva: entreprise.tva,
-    adresse: entreprise.adresse,
-    num: entreprise.num,
-    mail: entreprise.mail,
-    employer: entreprise.employer,
-    cp: entreprise.cp,
-    ville: entreprise.ville,
-    prix: entreprise.prix,
-    commission: entreprise.commission,
-    status: entreprise.status,
-    staff: entreprise.staff
-  }
-}
 
-module.exports = {connectAdmin, logoutAdmin, getAdmin, getEntreprise}
+
+module.exports = {connectAdmin, logoutAdmin, getAdmin}
