@@ -407,5 +407,6 @@ module.exports = {
     getDriverByNearest,
     getTeam,
     updateDriver,
-    addVehiculeToSelf
+    addVehiculeToSelf,
+
 }

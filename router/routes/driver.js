@@ -7,7 +7,7 @@ const {
     addEmployee,
     getTeam,
     updateDriver,
-    addVehiculeToSelf
+    addVehiculeToSelf,
 } = require('../../controllers/driverController/index');
 const {
     getNumberOfRaceAccomplishedById,
@@ -34,5 +34,6 @@ router.get('/stats/getBenefice', verifyToken, getBenefice)
 router.get('/stats/getBeneficeByPeriod', verifyToken, getBeneficeByPeriod)
 router.get('/stats/getCaByPeriod', verifyToken, getCAByPeriod)
 router.post('/addVehiculeToSelf', verifyToken, addVehiculeToSelf)
+
 
 module.exports = router

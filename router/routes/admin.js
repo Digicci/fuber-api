@@ -5,12 +5,12 @@ const {
   connectAdmin,
   logoutAdmin,
   getAdmin,
-  getEntreprise
+  getAllEntreprise,
 } = require('../../controllers/adminController/index')
 
 router.post('/login', connectAdmin)
 router.get('/logout', verifyToken, logoutAdmin)
 router.get('/get', verifyToken, getAdmin)
-router.get('/entreprise', verifyToken, getEntreprise)
+router.get('/entreprise',verifyToken,getAllEntreprise)
 
 module.exports = router

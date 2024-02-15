@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 
 
 const db = require(join(cwd, 'models', 'index.js'));
+const e = require("express");
 
 
 function connectAdmin(req,res){
@@ -55,19 +56,41 @@ function getAdmin(res,req){
   console.log(req.user)
   const admins = db['admin']
 
-  admins.findOne({
-    where: {
-      id: req.user.id
-    }
-  }).then(
-    (admin) => {
-      if(admin){
-        res.status(200).json(adminToSend(admin));
-      } else {
-        res.status(401).json({message: "Admin not found"});
+  if(req.user){
+    admins.findOne({
+      where: {
+        id: req.user.id
       }
-    }
-  )
+    }).then(
+      (admin) => {
+        if(admin){
+          res.status(200).json(adminToSend(admin));
+        } else {
+          res.status(401).json({message: "Admin not found"});
+        }
+      }
+    )
+  }
+}
+function getAllEntreprise(req,res){
+  const utilisateur = db['entreprise']
+  if(req.user){
+    utilisateur.findAll({
+      where: {
+        id:req.user.id
+      }
+    }).then(
+      (user) => {
+        if(user) {
+          res.status(200).send(entrepriseToSend(user))
+        } else {
+          res.status(400).send('Bad request.')
+        }
+      }
+    )
+  } else {
+    res.status(400).send('Bad request.')
+  }
 }
 
 
@@ -82,6 +105,26 @@ function adminToSend(admin){
   };
 }
 
+function entrepriseToSend(entreprise){
+  return{
+    id: entreprise.id,
+    nom: entreprise.nom,
+    prenom: entreprise.prenom,
+    nom_commercial: entreprise.nom_commercial,
+    siret: entreprise.siret,
+    tva: entreprise.tva,
+    adresse: entreprise.adresse,
+    num: entreprise.num,
+    mail: entreprise.mail,
+    employer: entreprise.employer,
+    cp: entreprise.cp,
+    ville: entreprise.ville,
+    prix: entreprise.prix,
+    commission: entreprise.commission,
+    staff: entreprise.staff,
+  }
+}
 
 
-module.exports = {connectAdmin, logoutAdmin, getAdmin}
+
+module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise}
