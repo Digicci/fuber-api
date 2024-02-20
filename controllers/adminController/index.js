@@ -2,6 +2,8 @@ const cwd = process.cwd()
 const {join} = require('node:path')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
+const dotenv = require('dotenv')
+dotenv.config()
 
 
 const db = require(join(cwd, 'models', 'index.js'));
@@ -76,13 +78,20 @@ function getAllEntreprise(req,res){
   const utilisateur = db['entreprise']
   if(req.user){
     utilisateur.findAll({
-      where: {
-        id:req.user.id
+      attributes:{
+        exclude:[
+          'mdp',
+          'code_recup',
+          'UUID',
+          'socket_token',
+          'lat',
+          'lng'
+        ]
       }
     }).then(
       (user) => {
         if(user) {
-          res.status(200).send(entrepriseToSend(user))
+          res.status(200).send(user)
         } else {
           res.status(400).send('Bad request.')
         }
@@ -103,26 +112,6 @@ function adminToSend(admin){
     prenom:admin.prenom,
     role:admin.role
   };
-}
-
-function entrepriseToSend(entreprise){
-  return{
-    id: entreprise.id,
-    nom: entreprise.nom,
-    prenom: entreprise.prenom,
-    nom_commercial: entreprise.nom_commercial,
-    siret: entreprise.siret,
-    tva: entreprise.tva,
-    adresse: entreprise.adresse,
-    num: entreprise.num,
-    mail: entreprise.mail,
-    employer: entreprise.employer,
-    cp: entreprise.cp,
-    ville: entreprise.ville,
-    prix: entreprise.prix,
-    commission: entreprise.commission,
-    staff: entreprise.staff,
-  }
 }
 
 
