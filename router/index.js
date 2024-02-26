@@ -5,12 +5,14 @@ const csrfRoutes = require('./routes/security');
 const raceRoutes = require('./routes/race');
 const driverRoutes = require('./routes/driver');
 const adminRoutes = require('./routes/admin')
+const offerRoutes = require('./routes/offre')
 
 router.use('/user', userRoutes);
 router.use('/security/csrf', csrfRoutes);
 router.use('/race', raceRoutes);
 router.use('/entreprise', driverRoutes);
 router.use('/admin', adminRoutes);
+router.use('/offre',offerRoutes)
 
 
 module.exports = router
