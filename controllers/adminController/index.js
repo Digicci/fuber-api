@@ -54,8 +54,8 @@ function logoutAdmin(req,res){
   )
 }
 
-function getAdmin(res,req){
-  console.log(req.user)
+function getAdmin(req,res){
+  console.log('admin controller', req.user)
   const admins = db['admin']
 
   if(req.user){

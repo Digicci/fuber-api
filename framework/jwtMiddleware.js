@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-const HOTKEY = 'secret'
 const dotenv = require('dotenv')
 dotenv.config()
 
@@ -16,11 +15,11 @@ const verifyToken = (req, res, next) => {
     const token = extractBearer(req)
     if (token) {
         jwt.verify(token, process.env.JWT_SECRET, {algorithm: 'HS256'},(err, decoded) => {
-            if (err || decoded === null) {
+            if (err || decoded === null || decoded === undefined) {
                 res.status(401).send('Unauthorized')
             } else {
                 req.user = decoded
-                console.log(decoded)
+                console.log('jwt middleware',decoded)
                 next()
             }
         })
