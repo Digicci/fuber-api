@@ -5,21 +5,22 @@ const db = require(join(cwd, 'models', 'index.js'))
 
 function createOffer(req,res){
   const {date_debut,date_fin,pourcentage,code_offre,nom_offre} = req.body
+  console.log(req.body)
   if(
     !date_debut ||
     !date_fin ||
     !pourcentage ||
-    !code_offre ||
     !nom_offre
   ) {
     res.status(400).send('Bad request.')
+    return
   }
   const offer = db['offre']
   offer.create({
     date_debut: date_debut,
     date_fin: date_fin,
     pourcentage: pourcentage,
-    reduction: null,
+    reduction: 0,
     reccurence: 0,
     code_offre: code_offre,
     cummulable: 0,
