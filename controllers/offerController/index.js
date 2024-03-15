@@ -2,6 +2,8 @@ const cwd = process.cwd()
 const {join} = require('node:path')
 
 const db = require(join(cwd, 'models', 'index.js'))
+const res = require("express/lib/response");
+
 
 function createOffer(req,res){
   const {date_debut,date_fin,pourcentage,code_offre,nom_offre} = req.body
@@ -21,7 +23,7 @@ function createOffer(req,res){
     date_fin: date_fin,
     pourcentage: pourcentage,
     reduction: 0,
-    reccurence: 0,
+    reccurence: 1,
     code_offre: code_offre,
     cummulable: 0,
     nom_offre: nom_offre,
@@ -38,6 +40,29 @@ function createOffer(req,res){
   })
 }
 
+function getAllOffer(req,res){
+  const offer = db['offre']
+  offer.findAll({
+    attributes: {
+      exclude: [
+        'createdAt',
+        'updatedAt',
+        'entrepriseID'
+      ]
+    }
+  }).then((offer) => {
+    if(offer){
+      console.log(offer)
+      res.status(201).send(offer)
+    }else{
+      res.status(400).send('false')
+    }
+  }).catch((err) => {
+    res.status(500).send('Bad request' + err)
+  })
+}
+
 module.exports = {
-  createOffer
+  createOffer,
+  getAllOffer
 }

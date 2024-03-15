@@ -78,6 +78,9 @@ function getAllEntreprise(req,res){
   const utilisateur = db['entreprise']
   if(req.user){
     utilisateur.findAll({
+      where: {
+        employerId: null
+      },
       attributes:{
         exclude:[
           'mdp',
@@ -103,6 +106,29 @@ function getAllEntreprise(req,res){
 }
 
 
+function getTeamByEmployerId (req,res) {
+  const {id} = req.params
+  const entreprise = db['entreprise']
+  entreprise.findAll({
+    where: {
+      employerId: id,
+    },
+    attributes:{
+      exclude:[
+        'mdp',
+        'code_recup',
+        'UUID',
+        'socket_token',
+        'lat',
+        'lng'
+      ]
+    }
+  }).then((team) => {
+    res.status(200).send(team)
+  }).catch((err)=>{
+    res.status(500).send(err)
+  })
+}
 
 function adminToSend(admin){
   return {
@@ -116,4 +142,4 @@ function adminToSend(admin){
 
 
 
-module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise}
+module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise, getTeamByEmployerId,}
