@@ -79,7 +79,8 @@ function getAllEntreprise(req,res){
   if(req.user){
     utilisateur.findAll({
       where: {
-        employerId: null
+        employerId: null,
+        statut : "confirmed"
       },
       attributes:{
         exclude:[
@@ -130,6 +131,38 @@ function getTeamByEmployerId (req,res) {
   })
 }
 
+function getEntreprisePending(req,res){
+  const utilisateur = db['entreprise']
+  if(req.user){
+    utilisateur.findAll({
+      where: {
+        employerId: null,
+        statut : "pending"
+      },
+      attributes:{
+        exclude:[
+          'mdp',
+          'code_recup',
+          'UUID',
+          'socket_token',
+          'lat',
+          'lng'
+        ]
+      }
+    }).then(
+      (user) => {
+        if(user) {
+          res.status(200).send(user)
+        } else {
+          res.status(400).send('Bad request.')
+        }
+      }
+    )
+  } else {
+    res.status(400).send('Bad request.')
+  }
+}
+
 function adminToSend(admin){
   return {
     id: admin.id,
@@ -142,4 +175,4 @@ function adminToSend(admin){
 
 
 
-module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise, getTeamByEmployerId,}
+module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise, getTeamByEmployerId, getEntreprisePending}
