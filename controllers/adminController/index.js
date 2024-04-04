@@ -8,6 +8,7 @@ dotenv.config()
 
 const db = require(join(cwd, 'models', 'index.js'));
 const e = require("express");
+const {where} = require("sequelize");
 
 
 function connectAdmin(req,res){
@@ -80,7 +81,6 @@ function getAllEntreprise(req,res){
     utilisateur.findAll({
       where: {
         employerId: null,
-        statut : "confirmed"
       },
       attributes:{
         exclude:[
@@ -131,36 +131,23 @@ function getTeamByEmployerId (req,res) {
   })
 }
 
-function getEntreprisePending(req,res){
-  const utilisateur = db['entreprise']
-  if(req.user){
-    utilisateur.findAll({
-      where: {
-        employerId: null,
-        statut : "pending"
-      },
-      attributes:{
-        exclude:[
-          'mdp',
-          'code_recup',
-          'UUID',
-          'socket_token',
-          'lat',
-          'lng'
-        ]
-      }
-    }).then(
-      (user) => {
-        if(user) {
-          res.status(200).send(user)
-        } else {
-          res.status(400).send('Bad request.')
-        }
-      }
-    )
-  } else {
-    res.status(400).send('Bad request.')
-  }
+
+function updateDriverPending (req,res) {
+  const {id, statut} = req.body
+  const entreprise = db['entreprise']
+  entreprise.findByPk(id).then((entreprise) =>{
+    if(entreprise){
+      entreprise.update({
+        statut : statut
+      })
+      res.status(201).send('Done')
+    }else{
+      res.status(401).send('Bad request')
+    }
+  }).catch((err) => {
+    res.status(500).send(err)
+  })
+
 }
 
 function adminToSend(admin){
@@ -175,4 +162,4 @@ function adminToSend(admin){
 
 
 
-module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise, getTeamByEmployerId, getEntreprisePending}
+module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise, getTeamByEmployerId, updateDriverPending}
