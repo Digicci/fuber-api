@@ -47,7 +47,8 @@ app.use(function(req,res,next){
 app.use(csurf(csrfSecret, [], [
     '/api/user/login',
     '/api/user/logout',
-    '/api/user/setDefault'
+    '/api/user/setDefault',
+    '/api/admin/refreshToken'
 ]))
 
 

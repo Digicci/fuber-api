@@ -27,13 +27,37 @@ function connectAdmin(req,res){
       if(!result) {
         return res.status(401).json({message: "Access denied"});
       }
-      const token = jwt.sign({id: admin.id, mail: admin.mail}, process.env.JWT_SECRET, {expiresIn: '1h'}, {algorithm: 'HS256'});
+      const payload = {id: admin.id, mail: admin.mail}
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: 1});
+      const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {expiresIn: '1d'})
       admin.update({
-        JWT: token
+        JWT: token,
+        secret: refreshToken
       })
-      res.status(200).send({token,admin: adminToSend(admin)})
+      res.status(200).send({token, refreshToken, admin: adminToSend(admin)})
     })
   }).catch(err => res.status(500).json({message: "something went wrong"}))
+}
+
+function refreshToken(req,res) {
+
+  const token = req.headers.authorization.split(' ')[1]
+  jwt.verify(token, process.env.JWT_REFRESH_SECRET, {algorithm: 'HS256'},(err, decoded) => {
+    if (err || decoded === null || decoded === undefined) {
+      res.status(401).send('Unauthorized')
+    } else {
+      req.user = decoded
+      console.log('jwt middleware',decoded)
+    }
+  })
+  db["admin"].findByPk(req.user.id).then((admin) => {
+    if(!admin) {
+      res.status(401).send('Unauthorized')
+    }
+    const token = jwt.sign({id:req.user.id, mail: req.user.mail}, process.env.JWT_SECRET, {expiresIn: '1h'})
+    res.status(200).send({token})
+  })
+
 }
 
 function logoutAdmin(req,res){
@@ -162,4 +186,12 @@ function adminToSend(admin){
 
 
 
-module.exports = {connectAdmin, logoutAdmin, getAdmin, getAllEntreprise, getTeamByEmployerId, updateDriverPending}
+module.exports = {
+  connectAdmin,
+  logoutAdmin,
+  getAdmin,
+  getAllEntreprise,
+  getTeamByEmployerId,
+  updateDriverPending,
+  refreshToken
+}

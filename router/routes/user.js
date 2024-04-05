@@ -12,7 +12,7 @@ router.post('/signup', createUser)
 
 router.get('/get', verifyToken, getUser)
 
-router.get('/logout', logoutUser)
+router.get('/logout', verifyToken, logoutUser)
 
 router.get('/addCardIntent', verifyToken, addCardIntent)
 
