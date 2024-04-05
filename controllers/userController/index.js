@@ -71,7 +71,7 @@ function updateUser(req, res) {
             if(prenom) {
                 user.prenom = prenom
             }
-            const token = jwt.sign({id: user.id, nom: user.nom}, HOTKEY, {expiresIn: '1h'}, {algorithm: 'HS256'})
+            const token = jwt.sign({id: user.id, nom: user.nom}, HOTKEY, {expiresIn: '24h'}, {algorithm: 'HS256'})
             user.JWT = token
             user.JWT_secret = HOTKEY
             user.save().then((user) => {
@@ -132,7 +132,7 @@ function connectUser(req, res) {
                         if (result) {
                             const token = jwt.sign(
                                 {id: userDB.id, nom: userDB.nom},
-                                HOTKEY, {expiresIn: '1h'},
+                                HOTKEY, {expiresIn: '24h'},
                                 {algorithm: 'HS256'}
                             )
 

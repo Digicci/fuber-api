@@ -1,6 +1,7 @@
 const app = require("./app")
 const http = require('http')
 const dotenv = require('dotenv')
+const webSocket = require('./WebSocket')
 dotenv.config()
 
 //WEB SERVER DEFINITION
@@ -23,9 +24,7 @@ app.db.sequelize.authenticate({logging: false}).then(() => {
 //END WEB SERVER DEFINITION
 
 //WEB SOCKET DEFINITION
-
-//TODO : The web socket listener will be here
-
+webSocket.listen(1000)
 //END WEB SOCKET DEFINITION
 
 function normalizePort(val) {
