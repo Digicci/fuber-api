@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');  // Import jwt
 const HOTKEY = "secret"  // Create a secret key
 const stripe = require("stripe")("sk_test_51MP9laGtIjyGGRoGbOoWLpkX4ypXVOrM34hqC0gUpBUTmcZcEUcB4nVEWc4SPRgYMm0AVs6kH52fwiskGYJAWuUh00GvV6vzsp")
 const {createCustomer} = require('../cardController/index')
+const dotenv = require('dotenv')
+dotenv.config()
 
 function createUser(req, res) {
     const { email, mdp, nom, prenom, tel } = req.body
@@ -71,7 +73,7 @@ function updateUser(req, res) {
             if(prenom) {
                 user.prenom = prenom
             }
-            const token = jwt.sign({id: user.id, nom: user.nom}, HOTKEY, {expiresIn: '24h'}, {algorithm: 'HS256'})
+            const token = jwt.sign({id: user.id, nom: user.nom}, process.env.JWT_SECRET, {expiresIn: '1h'})
             user.JWT = token
             user.JWT_secret = HOTKEY
             user.save().then((user) => {
@@ -102,7 +104,7 @@ function connectUser(req, res) {
                 if (userDB) {
                     bcrypt.compare(mdp, userDB.mdp, function (err, result) {
                         if (result) {
-                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, HOTKEY, {expiresIn: '24h'}, {algorithm: 'HS256'})
+                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_SECRET, {expiresIn: '24h'}, {algorithm: 'HS256'})
 
                             userDB.update({
                                 JWT: token,
