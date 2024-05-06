@@ -16,6 +16,7 @@ const verifyToken = (req, res, next) => {
     if (token) {
         jwt.verify(token, process.env.JWT_SECRET, {algorithm: 'HS256'},(err, decoded) => {
             if (err || decoded === null || decoded === undefined) {
+                console.log(err, decoded)
                 res.status(401).send('Unauthorized')
             } else {
                 req.user = decoded
@@ -24,6 +25,7 @@ const verifyToken = (req, res, next) => {
             }
         })
     } else {
+        console.log("no token")
         res.status(401).send('Unauthorized')
     }
 

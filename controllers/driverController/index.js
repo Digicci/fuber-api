@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');  // Import bcryptjs
 const jwt = require('jsonwebtoken');  // Import jwt
 const dotenv = require('dotenv');
 
+dotenv.config()
+
 //Clean driver info before sending it to the client
 
 function cleanDriver(driver) {
@@ -21,7 +23,8 @@ function cleanDriver(driver) {
         statut,
         employes,
         vehicule,
-        id
+        id,
+        courses
     } = driver
     return {
         nom: nom,
@@ -38,7 +41,8 @@ function cleanDriver(driver) {
         statut: statut,
         employes: employes,
         vehicule: vehicule,
-        id: id
+        id: id,
+        courses
     }
 }
 
@@ -118,16 +122,57 @@ function login(req, res) {
                 model: db['entreprise'],
                 as: 'employes',
                 include: [
-                    'vehicule'
+                    'vehicule',
+                    {
+                        model: db['course'],
+                        as: 'courses',
+                        include: [
+                            {
+                                model: db['utilisateur'],
+                                as: 'utilisateur',
+                                attributes: {
+                                    exclude: [
+                                        'mdp',
+                                        'code_recup',
+                                        'JWT',
+                                        'stripe_id',
+                                        'JWT_secret',
+                                        'UUID'
+                                    ]
+                                }
+                            }
+                        ]
+                    }
                 ]
             },
-            'vehicule'
+            'vehicule',
+            {
+                model: db['course'],
+                as: 'courses',
+                include: [
+                    {
+                        model: db['utilisateur'],
+                        as: 'utilisateur',
+                        attributes: {
+                            exclude: [
+                                'mdp',
+                                'code_recup',
+                                'JWT',
+                                'stripe_id',
+                                'JWT_secret',
+                                'UUID'
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
     }).then((dbDriver) => {
         if (dbDriver) {
+            console.log(dbDriver.courses)
             const valid = bcrypt.compareSync(mdp, dbDriver.mdp)
             if (valid) {
-                const token = jwt.sign({id: dbDriver.id}, process.env.JWT_SECRET, {algorithm: 'HS256'}, {expiresIn: '24h'})
+                const token = jwt.sign({id: dbDriver.id}, process.env.JWT_SECRET, {algorithm: 'HS256', expiresIn: '24h'})
                 res.status(200).send({auth: true, token: token, driver: cleanDriver(dbDriver)})
             } else {
                 res.status(401).send({auth: false, token: null, message: 'Invalid connexion informations'})

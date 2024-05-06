@@ -104,8 +104,10 @@ function connectUser(req, res) {
                 if (userDB) {
                     bcrypt.compare(mdp, userDB.mdp, function (err, result) {
                         if (result) {
-                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_SECRET, {expiresIn: '24h'}, {algorithm: 'HS256'})
+                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_SECRET, {expiresIn: '24h', algorithm: 'HS256'})
+                            const refreshToken = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_REFRESH_SECRET, {expiresIn: '7d', algorithm: 'HS256'})
 
+                            // Todo : Envoyer le refresh token au client et mettre a jour le client pour qu'il le garde en mémoire
                             userDB.update({
                                 JWT: token,
                                 JWT_secret: HOTKEY
@@ -132,11 +134,8 @@ function connectUser(req, res) {
                 if (userDB) {
                     bcrypt.compare(mdp, userDB.mdp, function (err, result) {
                         if (result) {
-                            const token = jwt.sign(
-                                {id: userDB.id, nom: userDB.nom},
-                                HOTKEY, {expiresIn: '24h'},
-                                {algorithm: 'HS256'}
-                            )
+                            const token = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_SECRET, {expiresIn: '24h', algorithm: 'HS256'})
+                            const refreshToken = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_REFRESH_SECRET, {expiresIn: '7d', algorithm: 'HS256'})
 
                             userDB.update({
                                 JWT: token,
