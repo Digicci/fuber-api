@@ -108,11 +108,7 @@ function connectUser(req, res) {
                             const refreshToken = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_REFRESH_SECRET, {expiresIn: '7d', algorithm: 'HS256'})
 
                             // Todo : Envoyer le refresh token au client et mettre a jour le client pour qu'il le garde en mémoire
-                            userDB.update({
-                                JWT: token,
-                                JWT_secret: HOTKEY
-                            })
-                            res.status(200).send({token, user: userToSend(userDB)})
+                            res.status(200).send({refreshToken, token, user: userToSend(userDB)})
                         } else {
                             res.status(401).send('password incorrect')
                         }
@@ -136,13 +132,9 @@ function connectUser(req, res) {
                         if (result) {
                             const token = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_SECRET, {expiresIn: '24h', algorithm: 'HS256'})
                             const refreshToken = jwt.sign({id: userDB.id, nom: userDB.nom}, process.env.JWT_REFRESH_SECRET, {expiresIn: '7d', algorithm: 'HS256'})
+                            
 
-                            userDB.update({
-                                JWT: token,
-                                JWT_secret: HOTKEY
-                            })
-
-                            res.status(200).send({token, user: userToSend(userDB)})
+                            res.status(200).send({refreshToken, token, user: userToSend(userDB)})
                         } else {
                             res.status(401).send('password incorrect')
                         }
@@ -156,6 +148,26 @@ function connectUser(req, res) {
     else{
         res.status(400).send('Merci de saisir un email ou un numéro de téléphone.')
     }
+}
+
+function refreshToken(req,res) {
+    
+    const token = req.headers.authorization.split(' ')[1]
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, {algorithm: 'HS256'},(err, decoded) => {
+        if (err || decoded === null || decoded === undefined) {
+            return res.status(401).send('Unauthorized')
+        }
+        req.user = decoded
+        console.log('jwt middleware',decoded)
+    })
+    db["utilisateur"].findByPk(req.user.id).then((user) => {
+        if(!user) {
+            return res.status(401).send('Unauthorized')
+        }
+        const token = jwt.sign({id:req.user.id, mail: req.user.mail}, process.env.JWT_SECRET, {expiresIn: '24h'})
+        res.status(200).send({token})
+    })
+    
 }
 
 function getUser(req, res) {
@@ -213,4 +225,4 @@ function userToSend(user) {
     }
 }
 
-module.exports = { createUser, connectUser, getUser, logoutUser, updateUser }
+module.exports = { createUser, connectUser, getUser, logoutUser, updateUser, refreshToken }

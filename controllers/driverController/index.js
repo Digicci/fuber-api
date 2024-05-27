@@ -372,7 +372,7 @@ function getDriverByNearest(req, res) {
                 FROM entreprises
                          INNER JOIN vehicules
                                     ON vehicules.entrepriseId = entreprises.id
-                HAVING distance < 20
+                HAVING distance < 40
                    AND socket_token IS NOT NULL
                 ORDER BY distance ASC`,
         {type: db.sequelize.QueryTypes.SELECT}
