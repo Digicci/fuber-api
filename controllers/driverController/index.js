@@ -194,6 +194,12 @@ function getEntreprise(req, res) {
                 {
                     model: db['entreprise'],
                     as: 'employes',
+                    attributes: {
+                      exclude: [
+                          'mdp',
+                          'code_recup'
+                      ]
+                    },
                     include: [
                         'vehicule',
                         {
@@ -218,7 +224,27 @@ function getEntreprise(req, res) {
                         }
                     ]
                 },
-                'vehicule'
+                'vehicule',
+                {
+                    model: db['course'],
+                    as: "courses",
+                    include: [
+                        {
+                            model: db['utilisateur'],
+                            as: 'utilisateur',
+                            attributes: {
+                                exclude: [
+                                    'mdp',
+                                    'code_recup',
+                                    'JWT',
+                                    'stripe_id',
+                                    'JWT_secret',
+                                    'UUID'
+                                ]
+                            }
+                        }
+                    ]
+                }
             ]
         }).then(
             (user) => {
@@ -234,12 +260,52 @@ function getEntreprise(req, res) {
     }
 }
 
+function getRaces(req, res) {
+    const course = db["course"]
+    course.findAll({
+        where: {
+            entrepriseId: req.user.id
+        },
+        include: [
+            {
+                model: db['utilisateur'],
+                as: 'utilisateur',
+                attributes: {
+                    exclude: [
+                        'mdp',
+                        'code_recup',
+                        'JWT',
+                        'stripe_id',
+                        'JWT_secret',
+                        'UUID'
+                    ]
+                }
+            }
+        ]
+    }).then((courses) => {
+        if(courses.length) {
+            return res.status(200).send(courses)
+        }
+        else {
+            return res.status(200).send([])
+        }
+    }).catch((e) => {
+        return res.status(500).send(`Internal server error : ${e.message}`)
+    })
+}
+
 function getTeam(req, res) {
     const utilisateur = db['entreprise']
     if (req.user) {
         utilisateur.findAll({
             where: {
                 employerId: req.user.id
+            },
+            attributes: {
+                exclude: [
+                    'mdp',
+                    'code_recup'
+                ]
             },
             include: [
                 'vehicule',
@@ -496,6 +562,7 @@ module.exports = {
     createDriver,
     login,
     getEntreprise,
+    getRaces,
     addEmployee,
     getDriverByNearest,
     getTeam,
