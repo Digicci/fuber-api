@@ -17,7 +17,7 @@ const verifyToken = (req, res, next) => {
         jwt.verify(token, process.env.JWT_SECRET, {algorithm: 'HS256'},(err, decoded) => {
             if (err || decoded === null || decoded === undefined) {
                 console.log(err, decoded)
-                res.status(401).send('Unauthorized')
+                return res.status(401).send('Unauthorized')
             } else {
                 req.user = decoded
                 console.log('jwt middleware',decoded)

@@ -205,7 +205,9 @@ function logoutUser(req, res) {
                 res.status(400).send('Bad request.')
             }
         }
-    )
+    ).catch(e => {
+        return res.status(500).send('Internal server error')
+    })
 }
 
 function userToSend(user) {
