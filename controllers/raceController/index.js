@@ -8,7 +8,6 @@ function addRace(req, res) {
   db["utilisateur"].findByPk(id).then((user) => {
     if (user.stripe_id && pm) {
       confirmPaiement(pm, user.stripe_id, total).then((intent) => {
-        console.log(`Intent`, intent)
         if (intent.status === "succeeded") {
           db.course.create({
             total: total,
@@ -26,6 +25,8 @@ function addRace(req, res) {
             validNumber: validNumber,
             payment_intent: intent.id
           }).then((course) => {
+            //console log
+            console.log("courseDB", course)
             res.status(200).send({course, respond: intent, message: 'success'})
           }).catch((err) => {
             res.status(200).send({message: 'adding race failed', error: err})
@@ -46,28 +47,31 @@ function refundRaceByID(req, res) {
   const id = req.user.id
   const {raceId} = req.body
   if (!raceId) {
-    //console log
-    console.log("rejected malformed request")
-    return res.status(400).send("Malformed request")
+    return res.status(400).send("L'identifiant de la course n'a pas été transmis")
   }
   db.course.findByPk(raceId)
-    .then((race) => {
+    .then(async (race) => {
       if (!race || race.utilisateurId !== parseInt(id)) {
         return res.status(400).send("Cette course n'existe pas")
       }
-      const refund = refundRace(race.payment_intent)
+      if (race.state === "refunded") {
+        throw new Error("La demande de remboursement à déjà été effectuée.")
+      }
+      const refund = await refundRace(race.payment_intent)
       switch (refund.status) {
         case "succeeded":
-          res.status(200).send("Succeeded")
-          break;
+          race.update({
+            state: "refunded"
+          }).then(() => res.status(200).send("succeeded"))
+          break
         
         default:
-          res.status(500).send("Une erreur s'est produite lors de la demande de remboursement.")
-          break
+          throw new Error(refund)
+          
       }
     })
     .catch((e) => {
-      res.status(500).send(`Une erreur s'est produite ${e.message}`)
+      res.status(400).send(`${e.message}`)
     })
 }
 

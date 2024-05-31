@@ -35,9 +35,13 @@ function confirmPaiement(pm, user, amount) {
 }
 
 async function refundRace(payment_intent) {
-    return await stripe.refunds.create({
-        payment_intent
-    })
+    try {
+        return await stripe.refunds.create({
+            payment_intent
+        })
+    } catch(e) {
+        return e
+    }
 }
 
 async function createCustomer() {
