@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const Sequelize = require('sequelize');
+const {Sequelize} = require('sequelize');
 const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
@@ -61,8 +61,7 @@ Object.keys(db).forEach(modelName => {
     db[modelName].associate(db);
   }
   db[modelName].sync({
-    logging: false,
-    alter: true
+    logging: false
   }).then(() => {
     console.log(`table ${modelName} synced`)
   }).catch((error) =>{
@@ -71,6 +70,7 @@ Object.keys(db).forEach(modelName => {
   })
 });
 
+sequelize.sync().then()
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
