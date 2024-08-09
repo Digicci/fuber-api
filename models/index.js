@@ -7,14 +7,40 @@ const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
+const mysql = require("mysql2");
 const db = {};
 const {makeAssociations} = require('./.assiociation')
 
+
+
+try {
+  //Les lignes qui suivent créer une connection à mysql afin de créer la database si elle n'existe pas
+  const connection = mysql.createConnection({
+    host: config.host,
+    port: config.port,
+    user: config.username,
+    password: config.password
+  })
+  
+  connection.query(`CREATE DATABASE IF NOT EXISTS \`${config.database}\`;`)
+  console.log("Database created or already exist")
+} catch (e) {
+  console.error(e, "Erreur de connexion mysql2")
+  process.exit(1)
+}
+
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
+
+try {
+  if (config.use_env_variable) {
+    sequelize = new Sequelize(process.env[config.use_env_variable], config);
+  } else {
+    //Connexion à la db avec sequelize
+    sequelize = new Sequelize(config.database, config.username, config.password, config);
+  }
+} catch (e) {
+  console.log(e, "Erreur de connexion sequelize")
+  process.exit(1)
 }
 
 fs
@@ -48,5 +74,6 @@ Object.keys(db).forEach(modelName => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
 
 module.exports = db;
