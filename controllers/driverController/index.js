@@ -24,7 +24,8 @@ function cleanDriver(driver) {
         employes,
         vehicule,
         id,
-        courses
+        courses,
+        prix
     } = driver
     return {
         nom: nom,
@@ -42,7 +43,8 @@ function cleanDriver(driver) {
         employes: employes,
         vehicule: vehicule,
         id: id,
-        courses
+        courses,
+        prix
     }
 }
 
@@ -465,8 +467,8 @@ function updateDriverLocation(driverId, location) {
 }
 
 function updateDriver(req, res) {
-    const {nom, prenom, num} = req.body
-    if (!nom || !prenom || !num) {
+    const {nom, prenom, num, prix} = req.body
+    if (!nom || !prenom || !num || !prix) {
         res.status(400).send('Bad request.')
     }
 
@@ -476,17 +478,20 @@ function updateDriver(req, res) {
         driver.update({
             nom: nom,
             prenom: prenom,
-            num: num
+            num: num,
+            prix: prix
         }).then((driver) => {
             if (
                 driver.nom === nom
                 && driver.prenom === prenom
                 && driver.num === num
+                && driver.prix === prix
             ) {
                 res.status(200).send({
                     nom: driver.nom,
                     prenom: driver.prenom,
-                    num: driver.num
+                    num: driver.num,
+                    prix: driver.prix
                 })
             }
         }).catch((err) => {
