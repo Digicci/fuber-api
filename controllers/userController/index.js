@@ -110,11 +110,11 @@ function connectUser(req, res) {
                             // Todo : Envoyer le refresh token au client et mettre a jour le client pour qu'il le garde en mémoire
                             res.status(200).send({refreshToken, token, user: userToSend(userDB)})
                         } else {
-                            res.status(401).send('password incorrect')
+                            res.status(404).send('Mot de passe ou identifiant incorrect')
                         }
                     })
                 } else {
-                    res.status(401).send('identifiant incorrect')
+                    res.status(404).send('Mot de passe ou identifiant incorrect')
                 }
             }
         )
@@ -136,11 +136,11 @@ function connectUser(req, res) {
 
                             res.status(200).send({refreshToken, token, user: userToSend(userDB)})
                         } else {
-                            res.status(401).send('password incorrect')
+                            res.status(404).send('Mot de passe ou identifiant incorrect')
                         }
                     })
                 } else {
-                    res.status(401).send('identifiant incorrect')
+                    res.status(404).send('Mot de passe ou identifiant incorrect')
                 }
             }
         )
