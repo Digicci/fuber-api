@@ -9,6 +9,6 @@ router.post('/add', verifyToken, addRace)
 router.get('/getAllPending', verifyToken, getAllPendingByUser)
 router.get('/getAllDone', verifyToken, getAllDoneByUser)
 router.post("/refundRace", verifyToken, refundRaceByID)
-router.put('/validatePendingRace', verifyToken, validatePendingRace)
+router.post('/validatePendingRace', verifyToken, validatePendingRace)
 
 module.exports = router

@@ -42,8 +42,6 @@ function addRace(req, res) {
 }
 
 function refundRaceByID(req, res) {
-  //console log
-  console.log("refund")
   const id = req.user.id
   const {raceId} = req.body
   if (!raceId) {
@@ -160,14 +158,19 @@ function getNumberOfRaceAccomplished(req, res) {
 
 function validatePendingRace(req,res) {
   const {raceId, validationNumber} = req.body;
-  const {courses} = db;
-  courses.findByPk(raceId).then(
-   (course) => {
-     if (validationNumber !== course.validNumber) {
+  const {course} = db;
+  course.findByPk(raceId).then(
+   (c) => {
+     if (validationNumber !== c.validNumber) {
        res.status(406).send("Le code de validation ne correspond pas à la course, merci de vérifier votre code et de recommencer.")
        return
      }
-     course.update({
+     if (c.state === "done") {
+       res.status(406).send("La course à déjà été validée.")
+       
+       return
+     }
+     c.update({
        state: "done"
      }).then(() => {
        res.status(204).send()
