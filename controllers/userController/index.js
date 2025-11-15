@@ -5,6 +5,9 @@ const HOTKEY = "secret"  // Create a secret key
 const stripe = require("stripe")("sk_test_51MP9laGtIjyGGRoGbOoWLpkX4ypXVOrM34hqC0gUpBUTmcZcEUcB4nVEWc4SPRgYMm0AVs6kH52fwiskGYJAWuUh00GvV6vzsp")
 const {createCustomer} = require('../cardController/index')
 const dotenv = require('dotenv')
+const http = require("node:http")
+const querystring = require("node:querystring")
+
 dotenv.config()
 
 function createUser(req, res) {
@@ -24,29 +27,63 @@ function createUser(req, res) {
                 if (user) {
                     res.status(400).send('User already exists.')
                 } else {
-                    utilisateur.create({
-                        mail: email,
-                        mdp: hash,
-                        nom: nom,
-                        prenom: prenom,
-                        num: tel,
-                        adresse: null,
-                        ville: null,
-                        cp: null,
-                        pays: null,
-                        code_recup: null,
-                        stripe_id: await createCustomer(),
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                    }).then((user) => {
-                        if (user) {
-                            res.status(201).send('true')
-                        } else {
-                            res.status(400).send('false')
-                        }
-                    }).catch((err) => {
-                        res.status(400).send('Bad request.' + err)
+                    // todo : extraire la logique propre à l'envoi
+                    //  des emails pour en faire un service à part
+                    const data = querystring.stringify({
+                        'from': "apimailernode@gmail.com",
+                        'to': email,
+                        'subject': "Validation de votre adresse mail.",
+                        'contentText': `<h1>Nous sommes heureux de vous accueillir.</h1><br/>Plus qu'une étape avant de pouvoir profiter pleinement de nos sérvices.`,
+                        'baseUrl': `http://localhost:3000/validation/${email}`,
+                        'actionText': "Cliquez içi pour valider votre adresse mail"
                     })
+                    const options = {
+                        hostname: "localhost",
+                        port: 2435,
+                        path: "/mail/validateEmail",
+                        method: "POST",
+                        headers: {
+                            'Content-Type': "application/x-www-form-urlencoded",
+                            'Content-Length': Buffer.byteLength(data)
+                        }
+                    };
+                    let validationCode = "";
+                    const postReq = http.request(options, (postRes) => {
+                        postRes.setEncoding("utf8");
+                        postRes.on("data", (chunk) => {
+                            validationCode += chunk;
+                        })
+                        
+                        postRes.on("end", async () => {
+                            
+                            utilisateur.create({
+                                mail: email,
+                                mdp: hash,
+                                nom: nom,
+                                prenom: prenom,
+                                num: tel,
+                                adresse: null,
+                                ville: null,
+                                cp: null,
+                                pays: null,
+                                code_recup: validationCode,
+                                stripe_id: await createCustomer(),
+                                createdAt: new Date(),
+                                updatedAt: new Date()
+                            }).then((user) => {
+                                if (user) {
+                                    console.log(validationCode)
+                                    res.status(201).send('true')
+                                } else {
+                                    res.status(400).send('false')
+                                }
+                            }).catch((err) => {
+                                res.status(400).send('Bad request.' + err)
+                            })
+                        })
+                    })
+                    postReq.write(data)
+                    postReq.end()
                 }
             }
         )
@@ -110,11 +147,11 @@ function connectUser(req, res) {
                             // Todo : Envoyer le refresh token au client et mettre a jour le client pour qu'il le garde en mémoire
                             res.status(200).send({refreshToken, token, user: userToSend(userDB)})
                         } else {
-                            res.status(401).send('password incorrect')
+                            res.status(404).send('Mot de passe ou identifiant incorrect')
                         }
                     })
                 } else {
-                    res.status(401).send('identifiant incorrect')
+                    res.status(404).send('Mot de passe ou identifiant incorrect')
                 }
             }
         )
@@ -136,11 +173,13 @@ function connectUser(req, res) {
 
                             res.status(200).send({refreshToken, token, user: userToSend(userDB)})
                         } else {
-                            res.status(401).send('password incorrect')
+                            console.log("here")
+                            res.status(404).send('Mot de passe ou identifiant incorrect')
                         }
                     })
                 } else {
-                    res.status(401).send('identifiant incorrect')
+                    console.log("or here")
+                    res.status(404).send('Mot de passe ou identifiant incorrect')
                 }
             }
         )

@@ -51,7 +51,7 @@ function cleanDriver(driver) {
 // Create a new driver account with pending status
 
 function createDriver(req, res) {
-    const {mail, mdp, nom, prenom, tel, nomCommercial, siret, ville, cp, adresse, staff} = req.body
+    const {mail, mdp, nom, prenom, tel, nomCommercial, siret, ville, cp, adresse} = req.body
     if (
         !mail ||
         !mdp ||
@@ -62,10 +62,10 @@ function createDriver(req, res) {
         !siret ||
         !ville ||
         !cp ||
-        !adresse ||
-        !staff
+        !adresse
     ) {
         res.status(400).send('Bad request.')
+        return
     }
 
     const salt = bcrypt.genSaltSync(10)  // Generate a salt
@@ -90,7 +90,7 @@ function createDriver(req, res) {
                 adresse: adresse,
                 ville: ville,
                 cp: cp,
-                staff: staff,
+                staff: 0,
                 pays: 'France',
                 statut: 'pending',
                 code_recup: null,
@@ -473,6 +473,7 @@ function getDriverByNearest(req, res) {
                                     ON vehicules.entrepriseId = entreprises.id
                 HAVING distance < 40
                    AND socket_token IS NOT NULL
+                    AND NOT EXISTS (SELECT * FROM courses WHERE entreprises.id = courses.entrepriseId AND courses.state = "pending")
                 ORDER BY distance ASC`,
         {type: db.sequelize.QueryTypes.SELECT}
     ).then((drivers) => {
@@ -501,6 +502,7 @@ function updateDriver(req, res) {
     const {nom, prenom, num, prix} = req.body
     if (!nom || !prenom || !num || !prix) {
         res.status(400).send('Bad request.')
+        return
     }
 
     const entreprise = db['entreprise']
@@ -554,6 +556,7 @@ function addVehiculeToSelf(req, res) {
 
     if (!marque || !immatriculation || !modele || !places || !car) {
         res.status(400).send('Malformed request.')
+        return
     }
     const {id} = req.user
     const vehicule = db['vehicule'];
@@ -570,7 +573,7 @@ function addVehiculeToSelf(req, res) {
         entrepriseId: id
     }).then((newVehicule) => {
         if (newVehicule) {
-            res.status(200).send(true)
+            res.status(200).send(newVehicule)
         } else {
             res.status(400).send(false)
         }

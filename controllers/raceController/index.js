@@ -4,7 +4,7 @@ const db = require('../../models/index')
 function addRace(req, res) {
   const {destination, driverPrice, commissionPrice, promo, driverId, total, pm} = req.body
   const id = req.user.id
-  const validNumber = Math.floor(Math.random() * 9999)
+  const validNumber = parseInt(`${Math.floor(Math.random() * 9)}${Math.floor(Math.random() * 9)}${Math.floor(Math.random() * 9)}${Math.floor(Math.random() * 9)}`)
   db["utilisateur"].findByPk(id).then((user) => {
     if (user.stripe_id && pm) {
       confirmPaiement(pm, user.stripe_id, total).then((intent) => {
@@ -42,8 +42,6 @@ function addRace(req, res) {
 }
 
 function refundRaceByID(req, res) {
-  //console log
-  console.log("refund")
   const id = req.user.id
   const {raceId} = req.body
   if (!raceId) {
@@ -158,11 +156,39 @@ function getNumberOfRaceAccomplished(req, res) {
   })
 }
 
+function validatePendingRace(req,res) {
+  const {raceId, validationNumber} = req.body;
+  const {course} = db;
+  course.findByPk(raceId).then(
+   (c) => {
+     if (validationNumber !== c.validNumber) {
+       res.status(406).send("Le code de validation ne correspond pas à la course, merci de vérifier votre code et de recommencer.")
+       return
+     }
+     if (c.state === "done") {
+       res.status(406).send("La course à déjà été validée.")
+       
+       return
+     }
+     c.update({
+       state: "done"
+     }).then(() => {
+       res.status(204).send()
+     })
+   },
+   (reason) => {
+     console.log(reason)
+     res.status(500).send(reason)
+   }
+  )
+}
+
 module.exports = {
   addRace,
   getAllPendingByUser,
   getAllDoneByUser,
   getNumberOfRaceAccomplishedById,
   getNumberOfRaceAccomplished,
-  refundRaceByID
+  refundRaceByID,
+  validatePendingRace
 }
