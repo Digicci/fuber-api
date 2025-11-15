@@ -347,73 +347,104 @@ function getTeam(req, res) {
 }
 
 function addEmployee(req, res) {
-    const {adresse, cp, mail, mdp, nom, prenom, tel, ville, immatriculation, marque, modele, place, car} = req.body;
+    const { adresse, cp, mail, mdp, nom, prenom, tel, ville, immatriculation, marque, modele, place, car, prix } = req.body;
+
     if (
-        !adresse ||
-        !cp ||
-        !mail ||
-        !mdp ||
-        !nom ||
-        !prenom ||
-        !tel ||
-        !ville ||
-        !immatriculation ||
-        !marque ||
-        !modele ||
-        !place ||
-        !car
+      !adresse ||
+      !cp ||
+      !mail ||
+      !mdp ||
+      !nom ||
+      !prenom ||
+      !tel ||
+      !ville ||
+      !immatriculation ||
+      !marque ||
+      !modele ||
+      !place ||
+      !car
     ) {
-        res.status(400).send('Bad request.')
+        return res.status(400).send('Bad request.');
     }
 
-    const salt = bcrypt.genSaltSync(10)  // Generate a salt
-    const hash = bcrypt.hashSync(mdp, salt)  // Hash the password
-    const driver = db['entreprise']
-    const vehicule = db['vehicule']
+    const salt = bcrypt.genSaltSync(10); // Generate a salt
+    const hash = bcrypt.hashSync(mdp, salt); // Hash the password
+    const driver = db['entreprise'];
+    const vehicule = db['vehicule'];
+
     driver.findOne({
-        where: {
-            mail: mail
-        }
+        where: { mail: mail }
     }).then((dbDriver) => {
         if (dbDriver) {
-            res.status(400).send('Driver already exists.')
+            return res.status(400).send('Driver already exists.');
         } else {
-            driver.create({
-                mail: mail,
-                mdp: hash,
-                nom: nom,
-                prenom: prenom,
-                num: tel,
-                adresse: adresse,
-                ville: ville,
-                cp: cp,
-                employerId: req.user.id,
-                statut: 'confirmed',
-                code_recup: null,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            }).then((dbDriver) => {
-                if (dbDriver) {
-                    vehicule.create({
-                        immatriculation: immatriculation,
-                        marque: marque,
-                        model: modele,
-                        places: place,
-                        type: car,
-                        entrepriseId: dbDriver.id,
-                    }).then((dbVehicule) => {
-                        db['entreprise'].update({staff: +1}, {where: {id: req.user.id}}).then(() => {
-                            res.status(201).send('true')
-                        })
-                    })
-                } else {
-                    res.status(400).send('false')
-                }
-            }).catch((err) => {
-                res.status(400).send('Bad request.' + err)
-            })
+            // Vérifiez si le prix est fourni
+            let prixEmploye = prix;
+
+            if (!prixEmploye) {
+                // Si le prix n'est pas fourni, récupérez le prix du patron
+                driver.findOne({
+                    where: { id: req.user.id }
+                }).then((dbPatron) => {
+                    if (dbPatron) {
+                        prixEmploye = dbPatron.prix; // Remplacez 'prix' par le champ correct du prix du patron
+
+                        createEmployeeAndVehicle(prixEmploye);
+                    } else {
+                        return res.status(400).send('Patron not found.');
+                    }
+                }).catch((err) => {
+                    return res.status(400).send('Error fetching patron price.' + err);
+                });
+            } else {
+                createEmployeeAndVehicle(prixEmploye);
+            }
         }
-    })
+    }).catch((err) => {
+        return res.status(400).send('Error checking driver.' + err);
+    });
+
+    function createEmployeeAndVehicle(prixEmploye) {
+        driver.create({
+            mail: mail,
+            mdp: hash,
+            nom: nom,
+            prenom: prenom,
+            num: tel,
+            adresse: adresse,
+            ville: ville,
+            cp: cp,
+            employerId: req.user.id,
+            statut: 'confirmed',
+            code_recup: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            prix: prixEmploye // Utilisation du prix fourni ou celui du patron
+        }).then((dbDriver) => {
+            if (dbDriver) {
+                vehicule.create({
+                    immatriculation: immatriculation,
+                    marque: marque,
+                    model: modele,
+                    places: place,
+                    type: car,
+                    entrepriseId: dbDriver.id,
+                }).then((dbVehicule) => {
+                    db['entreprise'].update({ staff: db.Sequelize.literal('staff + 1') }, { where: { id: req.user.id } }).then(() => {
+                        return res.status(201).send('true');
+                    }).catch((err) => {
+                        return res.status(400).send('Error updating staff count.' + err);
+                    });
+                }).catch((err) => {
+                    return res.status(400).send('Error creating vehicle.' + err);
+                });
+            } else {
+                return res.status(400).send('false');
+            }
+        }).catch((err) => {
+            return res.status(400).send('Bad request.' + err);
+        });
+    }
 }
 
 function getDriverByNearest(req, res) {
