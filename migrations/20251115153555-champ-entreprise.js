@@ -7,7 +7,7 @@ module.exports = {
       type: Sequelize.STRING
     })
     await queryInterface.addColumn("entreprises", "staff", {
-      type: Sequelize.NUMBER
+      type: Sequelize.INTEGER
     })
     await queryInterface.addColumn("entreprises", "pays", {
       type: Sequelize.STRING
