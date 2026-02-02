@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');  // Import bcryptjs
 const jwt = require('jsonwebtoken');  // Import jwt
 const HOTKEY = "secret"  // Create a secret key
 const stripe = require("stripe")("sk_test_51MP9laGtIjyGGRoGbOoWLpkX4ypXVOrM34hqC0gUpBUTmcZcEUcB4nVEWc4SPRgYMm0AVs6kH52fwiskGYJAWuUh00GvV6vzsp")
+const crypto = require('crypto')
 const {createCustomer} = require('../cardController/index')
 const dotenv = require('dotenv')
 dotenv.config()
@@ -197,6 +198,85 @@ function logoutUser(req, res) {
     )
 }
 
+function requestPasswordReset(req, res) {
+    const { email } = req.body
+    if (!email) {
+        res.status(400).send('Bad request.')
+        return
+    }
+
+    const utilisateur = db['utilisateur']
+    const token = crypto.randomBytes(20).toString('hex')
+    const ttlMinutes = parseInt(process.env.PASSWORD_RESET_TOKEN_TTL_MINUTES || '30', 10)
+    const expiresAt = Date.now() + ttlMinutes * 60 * 1000
+
+    utilisateur.findOne({
+        where: {
+            mail: email
+        }
+    }).then((user) => {
+        if (!user) {
+            res.status(200).send({ requested: true })
+            return
+        }
+        user.update({
+            code_recup: JSON.stringify({ token, expiresAt })
+        }).then(() => {
+            const response = { requested: true }
+            if (process.env.PASSWORD_RESET_DEBUG === 'true') {
+                response.token = token
+            }
+            res.status(200).send(response)
+        }).catch((err) => {
+            res.status(400).send('Bad request.' + err)
+        })
+    }).catch((err) => {
+        res.status(400).send('Bad request.' + err)
+    })
+}
+
+function verifyPasswordResetToken(req, res) {
+    const { email, token } = req.query
+    if (!email || !token) {
+        res.status(400).send('Bad request.')
+        return
+    }
+
+    const utilisateur = db['utilisateur']
+    utilisateur.findOne({
+        where: {
+            mail: email
+        }
+    }).then((user) => {
+        if (!user || !user.code_recup) {
+            res.status(400).send({ valid: false })
+            return
+        }
+        let storedToken = user.code_recup
+        let expiresAt = null
+        try {
+            const parsed = JSON.parse(user.code_recup)
+            if (parsed && parsed.token) {
+                storedToken = parsed.token
+                expiresAt = parsed.expiresAt ?? null
+            }
+        } catch (error) {
+            storedToken = user.code_recup
+        }
+        if (storedToken !== token) {
+            res.status(400).send({ valid: false })
+            return
+        }
+        if (expiresAt && Date.now() > expiresAt) {
+            res.status(400).send({ valid: false })
+            return
+        }
+        res.status(200).send({ valid: true })
+    }).catch((err) => {
+        res.status(400).send('Bad request.' + err)
+    })
+}
+
 function userToSend(user) {
     return {
         id: user.id,
@@ -214,4 +294,12 @@ function userToSend(user) {
     }
 }
 
-module.exports = { createUser, connectUser, getUser, logoutUser, updateUser }
+module.exports = {
+    createUser,
+    connectUser,
+    getUser,
+    logoutUser,
+    updateUser,
+    requestPasswordReset,
+    verifyPasswordResetToken
+}

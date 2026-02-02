@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();    // Create a router
-const { createUser, connectUser, getUser, logoutUser, updateUser} = require('../../controllers/userController/index');
+const {
+  createUser,
+  connectUser,
+  getUser,
+  logoutUser,
+  updateUser,
+  requestPasswordReset,
+  verifyPasswordResetToken
+} = require('../../controllers/userController/index');
 const { addCardIntent, getCards, saveIntent, setDefault, getDefault,  deleteCard } = require('../../controllers/cardController/index')
 const verifyToken  = require('../../framework/jwtMiddleware');
 const {getDriverByNearest} = require("../../controllers/driverController");
@@ -9,6 +17,10 @@ const {getDriverByNearest} = require("../../controllers/driverController");
 router.post('/login', connectUser)
 
 router.post('/signup', createUser)
+
+router.post('/forgotPassword', requestPasswordReset)
+
+router.get('/forgotPassword', verifyPasswordResetToken)
 
 router.get('/get', verifyToken, getUser)
 
