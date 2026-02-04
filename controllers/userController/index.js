@@ -244,12 +244,12 @@ function requestPasswordReset(req, res) {
         where: {
             mail: email
         }
-    }).then((user) => {
+    }).then( async (user) => {
         if (!user) {
             res.status(404).send({ requested: false, reason: "Unknown email" })
             return
         }
-        const isEmailSend = sendPasswordResetEmail(email, token);
+        const isEmailSend = await sendPasswordResetEmail(email, token);
         if (!isEmailSend) {
             res.status(501).send("Une erreur est survenue lors de l'envoie de l'email de réinitialisation.")
             return
