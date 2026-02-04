@@ -37,6 +37,18 @@ function initDriverSocket(io) {
             console.log('join')
             console.log(data)
         })
+        
+        //évènement émis lorsqu'un chauffeur accepte une course qui lui a été proposé par la partie user du projet
+        socket.on("race:accept", (data, callback) => {
+            console.log(data)
+            callback('received')
+        })
+        
+        socket.on("race:refuse", (data, callback) => {
+            const {utilisateurId} = data;
+            
+            callback("received")
+        })
     })
 }
 

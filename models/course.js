@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'pending',
+    },
+    payment_intent: {
+      type: DataTypes.STRING,
+      allowNull: false
     }
   }, {
     sequelize,

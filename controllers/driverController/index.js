@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');  // Import bcryptjs
 const jwt = require('jsonwebtoken');  // Import jwt
 const dotenv = require('dotenv');
 
+dotenv.config()
+
 //Clean driver info before sending it to the client
 
 function cleanDriver(driver) {
@@ -21,7 +23,9 @@ function cleanDriver(driver) {
         statut,
         employes,
         vehicule,
-        id
+        id,
+        courses,
+        prix
     } = driver
     return {
         nom: nom,
@@ -38,14 +42,16 @@ function cleanDriver(driver) {
         statut: statut,
         employes: employes,
         vehicule: vehicule,
-        id: id
+        id: id,
+        courses,
+        prix
     }
 }
 
 // Create a new driver account with pending status
 
 function createDriver(req, res) {
-    const {mail, mdp, nom, prenom, tel, nomCommercial, siret, ville, cp, adresse, staff} = req.body
+    const {mail, mdp, nom, prenom, tel, nomCommercial, siret, ville, cp, adresse} = req.body
     if (
         !mail ||
         !mdp ||
@@ -56,10 +62,10 @@ function createDriver(req, res) {
         !siret ||
         !ville ||
         !cp ||
-        !adresse ||
-        !staff
+        !adresse
     ) {
         res.status(400).send('Bad request.')
+        return
     }
 
     const salt = bcrypt.genSaltSync(10)  // Generate a salt
@@ -84,7 +90,7 @@ function createDriver(req, res) {
                 adresse: adresse,
                 ville: ville,
                 cp: cp,
-                staff: staff,
+                staff: 0,
                 pays: 'France',
                 statut: 'pending',
                 code_recup: null,
@@ -118,16 +124,57 @@ function login(req, res) {
                 model: db['entreprise'],
                 as: 'employes',
                 include: [
-                    'vehicule'
+                    'vehicule',
+                    {
+                        model: db['course'],
+                        as: 'courses',
+                        include: [
+                            {
+                                model: db['utilisateur'],
+                                as: 'utilisateur',
+                                attributes: {
+                                    exclude: [
+                                        'mdp',
+                                        'code_recup',
+                                        'JWT',
+                                        'stripe_id',
+                                        'JWT_secret',
+                                        'UUID'
+                                    ]
+                                }
+                            }
+                        ]
+                    }
                 ]
             },
-            'vehicule'
+            'vehicule',
+            {
+                model: db['course'],
+                as: 'courses',
+                include: [
+                    {
+                        model: db['utilisateur'],
+                        as: 'utilisateur',
+                        attributes: {
+                            exclude: [
+                                'mdp',
+                                'code_recup',
+                                'JWT',
+                                'stripe_id',
+                                'JWT_secret',
+                                'UUID'
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
     }).then((dbDriver) => {
         if (dbDriver) {
+            console.log(dbDriver.courses)
             const valid = bcrypt.compareSync(mdp, dbDriver.mdp)
             if (valid) {
-                const token = jwt.sign({id: dbDriver.id}, process.env.JWT_SECRET, {algorithm: 'HS256'}, {expiresIn: '24h'})
+                const token = jwt.sign({id: dbDriver.id}, process.env.JWT_SECRET, {algorithm: 'HS256', expiresIn: '24h'})
                 res.status(200).send({auth: true, token: token, driver: cleanDriver(dbDriver)})
             } else {
                 res.status(401).send({auth: false, token: null, message: 'Invalid connexion informations'})
@@ -149,6 +196,12 @@ function getEntreprise(req, res) {
                 {
                     model: db['entreprise'],
                     as: 'employes',
+                    attributes: {
+                      exclude: [
+                          'mdp',
+                          'code_recup'
+                      ]
+                    },
                     include: [
                         'vehicule',
                         {
@@ -173,7 +226,27 @@ function getEntreprise(req, res) {
                         }
                     ]
                 },
-                'vehicule'
+                'vehicule',
+                {
+                    model: db['course'],
+                    as: "courses",
+                    include: [
+                        {
+                            model: db['utilisateur'],
+                            as: 'utilisateur',
+                            attributes: {
+                                exclude: [
+                                    'mdp',
+                                    'code_recup',
+                                    'JWT',
+                                    'stripe_id',
+                                    'JWT_secret',
+                                    'UUID'
+                                ]
+                            }
+                        }
+                    ]
+                }
             ]
         }).then(
             (user) => {
@@ -189,12 +262,52 @@ function getEntreprise(req, res) {
     }
 }
 
+function getRaces(req, res) {
+    const course = db["course"]
+    course.findAll({
+        where: {
+            entrepriseId: req.user.id
+        },
+        include: [
+            {
+                model: db['utilisateur'],
+                as: 'utilisateur',
+                attributes: {
+                    exclude: [
+                        'mdp',
+                        'code_recup',
+                        'JWT',
+                        'stripe_id',
+                        'JWT_secret',
+                        'UUID'
+                    ]
+                }
+            }
+        ]
+    }).then((courses) => {
+        if(courses.length) {
+            return res.status(200).send(courses)
+        }
+        else {
+            return res.status(200).send([])
+        }
+    }).catch((e) => {
+        return res.status(500).send(`Internal server error : ${e.message}`)
+    })
+}
+
 function getTeam(req, res) {
     const utilisateur = db['entreprise']
     if (req.user) {
         utilisateur.findAll({
             where: {
                 employerId: req.user.id
+            },
+            attributes: {
+                exclude: [
+                    'mdp',
+                    'code_recup'
+                ]
             },
             include: [
                 'vehicule',
@@ -234,73 +347,104 @@ function getTeam(req, res) {
 }
 
 function addEmployee(req, res) {
-    const {adresse, cp, mail, mdp, nom, prenom, tel, ville, immatriculation, marque, modele, place, car} = req.body;
+    const { adresse, cp, mail, mdp, nom, prenom, tel, ville, immatriculation, marque, modele, place, car, prix } = req.body;
+
     if (
-        !adresse ||
-        !cp ||
-        !mail ||
-        !mdp ||
-        !nom ||
-        !prenom ||
-        !tel ||
-        !ville ||
-        !immatriculation ||
-        !marque ||
-        !modele ||
-        !place ||
-        !car
+      !adresse ||
+      !cp ||
+      !mail ||
+      !mdp ||
+      !nom ||
+      !prenom ||
+      !tel ||
+      !ville ||
+      !immatriculation ||
+      !marque ||
+      !modele ||
+      !place ||
+      !car
     ) {
-        res.status(400).send('Bad request.')
+        return res.status(400).send('Bad request.');
     }
 
-    const salt = bcrypt.genSaltSync(10)  // Generate a salt
-    const hash = bcrypt.hashSync(mdp, salt)  // Hash the password
-    const driver = db['entreprise']
-    const vehicule = db['vehicule']
+    const salt = bcrypt.genSaltSync(10); // Generate a salt
+    const hash = bcrypt.hashSync(mdp, salt); // Hash the password
+    const driver = db['entreprise'];
+    const vehicule = db['vehicule'];
+
     driver.findOne({
-        where: {
-            mail: mail
-        }
+        where: { mail: mail }
     }).then((dbDriver) => {
         if (dbDriver) {
-            res.status(400).send('Driver already exists.')
+            return res.status(400).send('Driver already exists.');
         } else {
-            driver.create({
-                mail: mail,
-                mdp: hash,
-                nom: nom,
-                prenom: prenom,
-                num: tel,
-                adresse: adresse,
-                ville: ville,
-                cp: cp,
-                employerId: req.user.id,
-                statut: 'confirmed',
-                code_recup: null,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            }).then((dbDriver) => {
-                if (dbDriver) {
-                    vehicule.create({
-                        immatriculation: immatriculation,
-                        marque: marque,
-                        model: modele,
-                        places: place,
-                        type: car,
-                        entrepriseId: dbDriver.id,
-                    }).then((dbVehicule) => {
-                        db['entreprise'].update({staff: +1}, {where: {id: req.user.id}}).then(() => {
-                            res.status(201).send('true')
-                        })
-                    })
-                } else {
-                    res.status(400).send('false')
-                }
-            }).catch((err) => {
-                res.status(400).send('Bad request.' + err)
-            })
+            // Vérifiez si le prix est fourni
+            let prixEmploye = prix;
+
+            if (!prixEmploye) {
+                // Si le prix n'est pas fourni, récupérez le prix du patron
+                driver.findOne({
+                    where: { id: req.user.id }
+                }).then((dbPatron) => {
+                    if (dbPatron) {
+                        prixEmploye = dbPatron.prix; // Remplacez 'prix' par le champ correct du prix du patron
+
+                        createEmployeeAndVehicle(prixEmploye);
+                    } else {
+                        return res.status(400).send('Patron not found.');
+                    }
+                }).catch((err) => {
+                    return res.status(400).send('Error fetching patron price.' + err);
+                });
+            } else {
+                createEmployeeAndVehicle(prixEmploye);
+            }
         }
-    })
+    }).catch((err) => {
+        return res.status(400).send('Error checking driver.' + err);
+    });
+
+    function createEmployeeAndVehicle(prixEmploye) {
+        driver.create({
+            mail: mail,
+            mdp: hash,
+            nom: nom,
+            prenom: prenom,
+            num: tel,
+            adresse: adresse,
+            ville: ville,
+            cp: cp,
+            employerId: req.user.id,
+            statut: 'confirmed',
+            code_recup: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            prix: prixEmploye // Utilisation du prix fourni ou celui du patron
+        }).then((dbDriver) => {
+            if (dbDriver) {
+                vehicule.create({
+                    immatriculation: immatriculation,
+                    marque: marque,
+                    model: modele,
+                    places: place,
+                    type: car,
+                    entrepriseId: dbDriver.id,
+                }).then((dbVehicule) => {
+                    db['entreprise'].update({ staff: db.Sequelize.literal('staff + 1') }, { where: { id: req.user.id } }).then(() => {
+                        return res.status(201).send('true');
+                    }).catch((err) => {
+                        return res.status(400).send('Error updating staff count.' + err);
+                    });
+                }).catch((err) => {
+                    return res.status(400).send('Error creating vehicle.' + err);
+                });
+            } else {
+                return res.status(400).send('false');
+            }
+        }).catch((err) => {
+            return res.status(400).send('Bad request.' + err);
+        });
+    }
 }
 
 function getDriverByNearest(req, res) {
@@ -327,8 +471,9 @@ function getDriverByNearest(req, res) {
                 FROM entreprises
                          INNER JOIN vehicules
                                     ON vehicules.entrepriseId = entreprises.id
-                HAVING distance < 20
+                HAVING distance < 40
                    AND socket_token IS NOT NULL
+                    AND NOT EXISTS (SELECT * FROM courses WHERE entreprises.id = courses.entrepriseId AND courses.state = "pending")
                 ORDER BY distance ASC`,
         {type: db.sequelize.QueryTypes.SELECT}
     ).then((drivers) => {
@@ -354,9 +499,10 @@ function updateDriverLocation(driverId, location) {
 }
 
 function updateDriver(req, res) {
-    const {nom, prenom, num} = req.body
-    if (!nom || !prenom || !num) {
+    const {nom, prenom, num, prix} = req.body
+    if (!nom || !prenom || !num || !prix) {
         res.status(400).send('Bad request.')
+        return
     }
 
     const entreprise = db['entreprise']
@@ -365,17 +511,20 @@ function updateDriver(req, res) {
         driver.update({
             nom: nom,
             prenom: prenom,
-            num: num
+            num: num,
+            prix: prix
         }).then((driver) => {
             if (
                 driver.nom === nom
                 && driver.prenom === prenom
                 && driver.num === num
+                && driver.prix === prix
             ) {
                 res.status(200).send({
                     nom: driver.nom,
                     prenom: driver.prenom,
-                    num: driver.num
+                    num: driver.num,
+                    prix: driver.prix
                 })
             }
         }).catch((err) => {
@@ -407,6 +556,7 @@ function addVehiculeToSelf(req, res) {
 
     if (!marque || !immatriculation || !modele || !places || !car) {
         res.status(400).send('Malformed request.')
+        return
     }
     const {id} = req.user
     const vehicule = db['vehicule'];
@@ -423,7 +573,7 @@ function addVehiculeToSelf(req, res) {
         entrepriseId: id
     }).then((newVehicule) => {
         if (newVehicule) {
-            res.status(200).send(true)
+            res.status(200).send(newVehicule)
         } else {
             res.status(400).send(false)
         }
@@ -451,6 +601,7 @@ module.exports = {
     createDriver,
     login,
     getEntreprise,
+    getRaces,
     addEmployee,
     getDriverByNearest,
     getTeam,

@@ -13,7 +13,9 @@ module.exports = {
         prenom: 'Test',
         mail: 'test@test.fr',
         mdp: hash,
-        role: "ADMIN"
+        role: "ADMIN",
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ])
   },

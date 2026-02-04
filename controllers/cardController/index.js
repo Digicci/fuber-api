@@ -34,6 +34,16 @@ function confirmPaiement(pm, user, amount) {
     })
 }
 
+async function refundRace(payment_intent) {
+    try {
+        return await stripe.refunds.create({
+            payment_intent
+        })
+    } catch(e) {
+        return e
+    }
+}
+
 async function createCustomer() {
     const customer = await stripe.customers.create()
     return customer.id
@@ -143,4 +153,14 @@ function saveIntent(req, res) {
     })
 }
 
-module.exports = {addCardIntent, confirmPaiement, getCards, saveIntent, createCustomer, setDefault, getDefault, deleteCard}
+module.exports = {
+    addCardIntent,
+    confirmPaiement,
+    getCards,
+    saveIntent,
+    createCustomer,
+    setDefault,
+    getDefault,
+    deleteCard,
+    refundRace
+}

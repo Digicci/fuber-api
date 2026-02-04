@@ -44,15 +44,14 @@ function refreshToken(req,res) {
   const token = req.headers.authorization.split(' ')[1]
   jwt.verify(token, process.env.JWT_REFRESH_SECRET, {algorithm: 'HS256'},(err, decoded) => {
     if (err || decoded === null || decoded === undefined) {
-      res.status(401).send('Unauthorized')
-    } else {
-      req.user = decoded
-      console.log('jwt middleware',decoded)
+      return res.status(401).send('Unauthorized')
     }
+    req.user = decoded
+    console.log('jwt middleware',decoded)
   })
   db["admin"].findByPk(req.user.id).then((admin) => {
     if(!admin) {
-      res.status(401).send('Unauthorized')
+      return res.status(401).send('Unauthorized')
     }
     const token = jwt.sign({id:req.user.id, mail: req.user.mail}, process.env.JWT_SECRET, {expiresIn: '1h'})
     res.status(200).send({token})

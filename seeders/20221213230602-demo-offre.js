@@ -7,7 +7,6 @@ module.exports = {
         {
             nom_offre: 'Offre 1',
             reduction: 10,
-            entrepriseId: 8,
             createdAt: new Date(),
             updatedAt: new  Date(),
             date_debut: new Date(),
