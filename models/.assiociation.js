@@ -1,7 +1,6 @@
 function makeAssociations(sequelize) {
     const {entreprise, offre, course, utilisateur, vehicule} = sequelize.models
 
-    entreprise.hasMany(offre)
 
     utilisateur.hasMany(course)
     entreprise.hasMany(course)

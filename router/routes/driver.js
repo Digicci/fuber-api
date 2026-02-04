@@ -1,30 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const {
-    createDriver,
-    login,
-    getEntreprise,
-    addEmployee,
-    getTeam,
-    updateDriver,
-    addVehiculeToSelf,
+  createDriver,
+  login,
+  getEntreprise,
+  addEmployee,
+  getTeam,
+  updateDriver,
+  addVehiculeToSelf,
+  getRaces
 } = require('../../controllers/driverController/index');
 const {
-    getNumberOfRaceAccomplishedById,
-    getNumberOfRaceAccomplished
+  getNumberOfRaceAccomplishedById,
+  getNumberOfRaceAccomplished
 } = require('../../controllers/raceController/index');
 const {
-    getCA,
-    getBenefice,
-    getBeneficeByPeriod,
-    getCAByPeriod
+  getCA,
+  getBenefice,
+  getBeneficeByPeriod,
+  getCAByPeriod
 } = require('../../controllers/statsController/index');
 const verifyToken = require('../../framework/jwtMiddleware');
 
 router.post('/signup', createDriver)
 router.post('/login', login)
 router.put('/update', verifyToken, updateDriver)
-router.get('/get',verifyToken, getEntreprise)
+router.get('/get', verifyToken, getEntreprise)
+router.get('/getRaces', verifyToken, getRaces)
 router.post('/register', verifyToken, addEmployee)
 router.get('/team', verifyToken, getTeam)
 router.get('/stats/getNumberOfRaceById/:id', verifyToken, getNumberOfRaceAccomplishedById)

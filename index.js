@@ -15,11 +15,15 @@ server.listen(port)
 server.on('error', onError)
 server.on('listening', onListening)
 // testing db connexion and sync tables
-app.db.sequelize.authenticate({logging: false}).then(() => {
-    console.log('\nConnected to database.\n\n\n');
+try {
+    app.db.sequelize.authenticate({logging: false}).then(() => {
+        console.log('\nConnected to database.\n\n\n');
     }).catch(err => {
         console.error('\nUnable to connect to the database:\n\n\n', err);
     })
+} catch (e) {
+    console.error(e,"Erreur lors de l'authentification Sequelize")
+}
 
 //END WEB SERVER DEFINITION
 

@@ -9,7 +9,14 @@ const {
   requestPasswordReset,
   verifyPasswordResetToken
 } = require('../../controllers/userController/index');
-const { addCardIntent, getCards, saveIntent, setDefault, getDefault,  deleteCard } = require('../../controllers/cardController/index')
+const { addCardIntent,
+  getCards,
+  saveIntent,
+  setDefault,
+  getDefault,
+  deleteCard
+} = require('../../controllers/cardController/index')
+
 const verifyToken  = require('../../framework/jwtMiddleware');
 const {getDriverByNearest} = require("../../controllers/driverController");
 

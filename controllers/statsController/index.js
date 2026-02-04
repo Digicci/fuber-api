@@ -19,7 +19,10 @@ function getCA(req, res) {
         include: [
             {
                 model: course,
-                as: 'courses'
+                as: 'courses',
+                where: {
+                    state: "done"
+                }
             },
             //Inclusion des employés de l'utilisateur
             {
@@ -29,7 +32,10 @@ function getCA(req, res) {
                 include: [
                     {
                         model: course,
-                        as: 'courses'
+                        as: 'courses',
+                        where: {
+                            state: "done"
+                        }
                     }
                 ]
             },
