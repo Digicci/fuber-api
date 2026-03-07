@@ -40,19 +40,17 @@ function sendValidationEmail({ email }) {
 }
 
 function sendPasswordResetEmail(email, token) {
-    const baseUrl = `http://localhost:3000/forgot-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`
+    const baseUrl = `http://localhost:3000/reset-password?email=${encodeURIComponent(email)}&token=${token}`
     const data = querystring.stringify({
         'from': "apimailernode@gmail.com",
         'to': email,
         'subject': "Reinitialisation de votre mot de passe.",
-        'contentText': `Cliquez sur le lien pour reinitialiser votre mot de passe.`,
-        'baseUrl': baseUrl,
-        'actionText': "Reinitialiser mon mot de passe"
+        'html': `Cliquez sur le lien pour reinitialiser votre mot de passe. <br /> <a href="${baseUrl}">Cliquez içi</a>. <br/> Ou copiez le lien suivant : ${baseUrl}`,
     })
     const options = {
         hostname: "localhost",
         port: 2435,
-        path: "/mail/validateEmail",
+        path: "/mail/send",
         method: "POST",
         headers: {
             'Content-Type': "application/x-www-form-urlencoded",
