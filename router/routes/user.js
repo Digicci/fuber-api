@@ -7,7 +7,7 @@ const {
   logoutUser,
   updateUser,
   requestPasswordReset,
-  verifyPasswordResetToken
+  verifyPasswordReset
 } = require('../../controllers/userController/index');
 const { addCardIntent,
   getCards,
@@ -27,7 +27,7 @@ router.post('/signup', createUser)
 
 router.post('/forgotPassword', requestPasswordReset)
 
-router.get('/forgotPassword', verifyPasswordResetToken)
+router.post('/reset-password', verifyPasswordReset)
 
 router.get('/get', verifyToken, getUser)
 

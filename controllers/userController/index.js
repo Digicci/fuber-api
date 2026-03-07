@@ -236,7 +236,7 @@ function requestPasswordReset(req, res) {
         utilisateur = db['entreprise']
     }
     
-    const token = crypto.randomBytes(20).toString();
+    const token = (crypto.randomBytes(20)).toString('hex')
     const ttlMinutes = parseInt(process.env.PASSWORD_RESET_TOKEN_TTL_MINUTES || '30', 10)
     const expiresAt = Date.now() + ttlMinutes * 60 * 1000
 
@@ -266,13 +266,13 @@ function requestPasswordReset(req, res) {
             res.status(501).send("Une erreur est survenue lors de la demande d'envoie d'email : " + err)
         })
     }).catch((err) => {
-        res.status(501).send('Une erreur est survenue lors de la rÃ©cupÃ©ration de votre adresse email' + err)
+        res.status(501).send('Une erreur est survenue lors de la récupération de votre adresse email' + err)
     })
 }
 
-function verifyPasswordResetToken(req, res) {
-    const { email, token } = req.query
-    if (!email || !token) {
+function verifyPasswordReset(req, res) {
+    const { email, token, password } = { ...req.body }
+    if (!email || !token || !password) {
         res.status(400).send('Bad request.')
         return
     }
@@ -287,6 +287,7 @@ function verifyPasswordResetToken(req, res) {
             res.status(400).send({ valid: false })
             return
         }
+
         let storedToken = user.code_recup
         let expiresAt = null
         try {
@@ -298,6 +299,7 @@ function verifyPasswordResetToken(req, res) {
         } catch (error) {
             storedToken = user.code_recup
         }
+
         if (storedToken !== token) {
             res.status(400).send({ valid: false })
             return
@@ -306,7 +308,17 @@ function verifyPasswordResetToken(req, res) {
             res.status(400).send({ valid: false })
             return
         }
-        res.status(200).send({ valid: true })
+
+        const salt = bcrypt.genSaltSync(10)
+        const hash = bcrypt.hashSync(password, salt)
+        user.update({
+            mdp: hash,
+            code_recup: null
+        }).then(() => {
+            res.status(200).send({ valid: true, reset: true })
+        }).catch((err) => {
+            res.status(400).send('Bad request.' + err)
+        })
     }).catch((err) => {
         res.status(400).send('Bad request.' + err)
     })
@@ -336,5 +348,5 @@ module.exports = {
     logoutUser,
     updateUser,
     requestPasswordReset,
-    verifyPasswordResetToken
+    verifyPasswordReset
 }
