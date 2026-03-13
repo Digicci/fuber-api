@@ -50,6 +50,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         defaultValue: DataTypes.NONE,
         allowNull: true
+    },
+    socket_token: {
+      type: DataTypes.STRING,
+      defaultValue: DataTypes.NONE,
+      allowNull: true
     }
   }, {
     sequelize,

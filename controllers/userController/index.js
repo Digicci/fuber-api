@@ -324,6 +324,29 @@ function verifyPasswordReset(req, res) {
     })
 }
 
+function setSocketToken (id, socket_id = null) {
+    const users = db["utilisateur"];
+    return users.findByPk(id).then((user) => {
+        console.log(user);
+        return user.update({socket_token: socket_id}).then(() => {
+            return socket_id !== null;
+        })
+    }).catch((err) => {
+        console.error(err)
+        return false;
+    })
+}
+
+function getUserSocketTokenById(userId) {
+    const users = db["utilisateur"];
+    return users.findByPk(userId).then((user) => {
+        if (user) {
+            return user.socket_token ? user.socket_token : null
+        }
+        return null
+    })
+}
+
 function userToSend(user) {
     return {
         id: user.id,
@@ -348,5 +371,7 @@ module.exports = {
     logoutUser,
     updateUser,
     requestPasswordReset,
-    verifyPasswordReset
+    verifyPasswordReset,
+    setSocketToken,
+    getUserSocketTokenById
 }

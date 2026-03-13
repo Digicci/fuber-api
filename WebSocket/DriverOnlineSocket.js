@@ -1,4 +1,5 @@
 const {setIsOnline, updateDriverLocation} = require('../controllers/driverController')
+const {getUserSocketTokenById} = require("../controllers/userController");
 function initDriverSocket(io) {
     const driverSocket = io.of('/driver')
     driverSocket.on('connection', (socket) => {
@@ -40,12 +41,16 @@ function initDriverSocket(io) {
         
         //évènement émis lorsqu'un chauffeur accepte une course qui lui a été proposé par la partie user du projet
         socket.on("race:accept", (data, callback) => {
-            console.log(data)
             callback('received')
         })
         
         socket.on("race:refuse", (data, callback) => {
             const {utilisateurId} = data;
+            const user_socket_id = getUserSocketTokenById(utilisateurId);
+            
+            // todo : ajouter l'appel d'une fonction permettant de changer le status de la course et de lancer le remboursement du client ou la levé de d'empreinte.
+            
+            io.of("/user").to(user_socket_id).emit("race:refused", data);
             
             callback("received")
         })
