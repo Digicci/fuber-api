@@ -1,5 +1,7 @@
 const {setIsOnline, updateDriverLocation} = require('../controllers/driverController')
 const {getUserSocketTokenById} = require("../controllers/userController");
+const {refundRace} = require("../controllers/cardController");
+const db = require('../models/index');
 function initDriverSocket(io) {
     const driverSocket = io.of('/driver')
     driverSocket.on('connection', (socket) => {
@@ -45,12 +47,24 @@ function initDriverSocket(io) {
         })
         
         socket.on("race:refuse", (data, callback) => {
-            const {utilisateurId} = data;
+            const {utilisateurId, payment_intent} = data;
             const user_socket_id = getUserSocketTokenById(utilisateurId);
-            
-            // todo : ajouter l'appel d'une fonction permettant de changer le status de la course et de lancer le remboursement du client ou la levé de d'empreinte.
-            
-            io.of("/user").to(user_socket_id).emit("race:refused", data);
+            console.log(data);
+            refundRace(payment_intent).then((refund) => {
+                switch (refund.status) {
+                    case "succeeded":
+                        db.course.findByPk(data.id).then((race) => {
+                            race.update({state: "refunded"})
+                             .then(() => {
+                                 io.of("/user").to(user_socket_id).emit("race:refused", data);
+                             })
+                        })
+                        break;
+                        
+                    default:
+                        return
+                }
+            })
             
             callback("received")
         })
