@@ -3,6 +3,7 @@ const {join} = require('node:path')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
+const {updateDriverCommission} = require("../driverController");
 dotenv.config()
 
 
@@ -183,6 +184,18 @@ function adminToSend(admin){
   };
 }
 
+function updateEntrepriseCommission(req, res) {
+  const {driverId, commission} = req.body;
+  if (!driverId || !commission) return res.status(400).send("Bad request.");
+  
+  updateDriverCommission(driverId, commission)
+   .then((res) => {
+     if (res) return req.send("done");
+     return req.status(401).send("Error during process")
+   })
+  return req.status(500).send("Server error");
+}
+
 
 
 module.exports = {
@@ -192,5 +205,6 @@ module.exports = {
   getAllEntreprise,
   getTeamByEmployerId,
   updateDriverPending,
-  refreshToken
+  refreshToken,
+  updateEntrepriseCommission
 }
