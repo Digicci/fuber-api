@@ -190,10 +190,10 @@ function updateEntrepriseCommission(req, res) {
   
   updateDriverCommission(driverId, commission)
    .then((res) => {
-     if (res) return req.send("done");
-     return req.status(401).send("Error during process")
+     if (res) return res.send("done");
+     return res.status(401).send("Error during process")
    })
-  return req.status(500).send("Server error");
+  return res.status(500).send("Server error");
 }
 
 
