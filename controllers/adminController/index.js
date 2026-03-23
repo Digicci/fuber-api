@@ -189,8 +189,8 @@ function updateEntrepriseCommission(req, res) {
   if (!driverId || !commission) return res.status(400).send("Bad request.");
   
   updateDriverCommission(driverId, commission)
-   .then((res) => {
-     if (res) return res.send("done");
+   .then((done) => {
+     if (done) return res.send("done");
      return res.status(401).send("Error during process")
    })
   return res.status(500).send("Server error");
