@@ -192,8 +192,9 @@ function updateEntrepriseCommission(req, res) {
    .then((done) => {
      if (done) return res.send("done");
      return res.status(401).send("Error during process")
-   })
-  return res.status(500).send("Server error");
+   }).catch(() => {
+    return res.status(500).send("Server error");
+  })
 }
 
 
