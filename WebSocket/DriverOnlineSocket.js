@@ -46,9 +46,9 @@ function initDriverSocket(io) {
             callback('received')
         })
         
-        socket.on("race:refuse", (data, callback) => {
+        socket.on("race:refuse", async (data, callback) => {
             const {utilisateurId, payment_intent} = data;
-            const user_socket_id = getUserSocketTokenById(utilisateurId);
+            const user_socket_id = await getUserSocketTokenById(utilisateurId);
             console.log(data);
             refundRace(payment_intent).then((refund) => {
                 switch (refund.status) {
