@@ -16,6 +16,9 @@ const { addCardIntent,
   getDefault,
   deleteCard
 } = require('../../controllers/cardController/index')
+const {
+  getUserNotifications, markNotificationAsRead, deleteNotificationById, deleteNotificationsByUserId
+} = require("../../controllers/userNotificationController");
 
 const verifyToken  = require('../../framework/jwtMiddleware');
 const {getDriverByNearest} = require("../../controllers/driverController");
@@ -47,7 +50,13 @@ router.get('/getDefault', verifyToken, getDefault)
 
 router.put('/update', verifyToken, updateUser)
 
-
 router.post('/getNearDrivers', getDriverByNearest)
+
+// Notifications routes
+
+router.get("/notification", verifyToken, getUserNotifications);
+router.put("/notification/:notificationId/markAsRead", verifyToken, markNotificationAsRead);
+router.delete("/notification/:notificationId/delete", verifyToken, deleteNotificationById);
+router.delete("/notification/delete", verifyToken, deleteNotificationsByUserId);
 
 module.exports = router
