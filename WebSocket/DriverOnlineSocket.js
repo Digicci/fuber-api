@@ -1,4 +1,7 @@
 const {setIsOnline, updateDriverLocation} = require('../controllers/driverController')
+const {getUserSocketTokenById} = require("../controllers/userController");
+const {refundRace} = require("../controllers/cardController");
+const db = require('../models/index');
 function initDriverSocket(io) {
     const driverSocket = io.of('/driver')
     driverSocket.on('connection', (socket) => {
@@ -40,12 +43,28 @@ function initDriverSocket(io) {
         
         //évènement émis lorsqu'un chauffeur accepte une course qui lui a été proposé par la partie user du projet
         socket.on("race:accept", (data, callback) => {
-            console.log(data)
             callback('received')
         })
         
-        socket.on("race:refuse", (data, callback) => {
-            const {utilisateurId} = data;
+        socket.on("race:refuse", async (data, callback) => {
+            const {utilisateurId, payment_intent} = data;
+            const user_socket_id = await getUserSocketTokenById(utilisateurId);
+            console.log(data);
+            refundRace(payment_intent).then((refund) => {
+                switch (refund.status) {
+                    case "succeeded":
+                        db.course.findByPk(data.id).then((race) => {
+                            race.update({state: "refunded"})
+                             .then(() => {
+                                 io.of("/user").to(user_socket_id).emit("race:refused", data);
+                             })
+                        })
+                        break;
+                        
+                    default:
+                        return
+                }
+            })
             
             callback("received")
         })

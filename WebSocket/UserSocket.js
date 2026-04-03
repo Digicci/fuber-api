@@ -1,4 +1,5 @@
 const {getDriverSocketTokenById} = require('../controllers/driverController')
+const {setSocketToken} = require("../controllers/userController")
 const raceRepository= require("../repository/race.repository")
 
 function initUserSocket(io) {
@@ -10,6 +11,9 @@ function initUserSocket(io) {
   })
   
   socket.on('race:request', (data, callback) => {
+   // on enregistre le socket token du user afin de pouvoir l'utiliser au besoin
+   setSocketToken(data.raceInfo.utilisateurId, socket.id);
+   
    // We can use the driverId to send this data to the driver
    getDriverSocketTokenById(data.raceInfo.entrepriseId).then((token) => {
     // On peut contacter le driver grâce à son token de socket, cependant il faudra bien chercher à contacter le token

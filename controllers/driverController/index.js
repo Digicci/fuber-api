@@ -596,6 +596,13 @@ function getDriverSocketTokenById(driverId) {
     })
 }
 
+async function updateDriverCommission(driverId, commission) {
+    const entreprise = db["entreprise"];
+    const driver = await entreprise.findByPk(driverId);
+    const success = await driver.update({commission: commission})
+    return success.commission === commission
+}
+
 
 module.exports = {
     createDriver,
@@ -609,5 +616,6 @@ module.exports = {
     addVehiculeToSelf,
     setIsOnline,
     updateDriverLocation,
-    getDriverSocketTokenById
+    getDriverSocketTokenById,
+    updateDriverCommission
 }

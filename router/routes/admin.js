@@ -8,7 +8,8 @@ const {
     getAllEntreprise,
     getTeamByEmployerId,
     updateDriverPending,
-    refreshToken
+    refreshToken,
+    updateEntrepriseCommission
 } = require('../../controllers/adminController/index')
 
 router.post('/login', connectAdmin)
@@ -18,5 +19,6 @@ router.get('/entreprise', verifyToken, getAllEntreprise)
 router.get('/team/:id', verifyToken, getTeamByEmployerId)
 router.post('/updateDriverPending', verifyToken, updateDriverPending)
 router.post('/refreshToken', refreshToken)
+router.post("/updateDriverCommission", verifyToken, updateEntrepriseCommission)
 
 module.exports = router
