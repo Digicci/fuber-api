@@ -2,6 +2,9 @@ const {setIsOnline, updateDriverLocation} = require('../controllers/driverContro
 const {getUserSocketTokenById} = require("../controllers/userController");
 const {refundRace} = require("../controllers/cardController");
 const db = require('../models/index');
+const {
+    createUserNotification
+} = require("../controllers/userNotificationController")
 function initDriverSocket(io) {
     const driverSocket = io.of('/driver')
     driverSocket.on('connection', (socket) => {
@@ -56,7 +59,18 @@ function initDriverSocket(io) {
                         db.course.findByPk(data.id).then((race) => {
                             race.update({state: "refunded"})
                              .then(() => {
-                                 io.of("/user").to(user_socket_id).emit("race:refused", data);
+                                 const message = "Le chauffeur à refusé la course, une demande de remboursement à été émise automatiquement."
+                                 const title = "Course refusée";
+                                 const type = "error"
+                                 createUserNotification(title, message, type, race.utilisateurId)
+                                  .then((notification) => {
+                                      console.log(notification)
+                                      const {id} = notification
+                                      io.of("/user").to(user_socket_id).emit("race:refused", {...data, type, message, title, id});
+                                  })
+                                 
+                                 // createUserNotification(title, message, type, race.utilisateurId);
+                                 // io.of("/user").to(user_socket_id).emit("race:refused", {...data, type, message, title});
                              })
                         })
                         break;
