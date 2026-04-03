@@ -47,7 +47,12 @@ function markNotificationAsRead (req, res) {
 	const {notificationId} = req.params
 	if (notificationId) {
 		const notifications = db["User_notification"];
-		notifications.findByPk(notificationId)
+		notifications.findOne({
+			where: {
+				id: notificationId,
+				utilisateurId: req.user.id
+			}
+		})
 		 .then((notif) => {
 			 notif.read = true
 			 notif.save()
