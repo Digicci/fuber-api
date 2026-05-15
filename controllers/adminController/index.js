@@ -10,6 +10,7 @@ dotenv.config()
 const db = require(join(cwd, 'models', 'index.js'));
 const e = require("express");
 const {where} = require("sequelize");
+const {getAllPayement} = require("../cardController");
 
 
 function connectAdmin(req,res){
@@ -260,6 +261,12 @@ function updateEntrepriseCommission(req, res) {
   })
 }
 
+function getStipePaymentList(req, res) {
+  getAllPayement().then((payments) => {
+    res.status(200).send(payments)
+  })
+}
+
 
 
 module.exports = {
@@ -271,5 +278,6 @@ module.exports = {
   updateDriverPending,
   refreshToken,
   updateEntrepriseCommission,
-  getAllEntrepriseWithDetails
+  getAllEntrepriseWithDetails,
+  getStipePaymentList
 }

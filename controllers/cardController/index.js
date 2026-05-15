@@ -153,10 +153,9 @@ function saveIntent(req, res) {
 	})
 }
 
-// todo : serialize payment contient un Array de promise, il faut trouver une solution pour récupérer les data
 async function getAllPayement() {
 	const payments = await stripe.paymentIntents.list()
-	const serializePayments = payments.data.map(async (payment) => {
+	const serializePayments = Promise.all(payments.data.map(async (payment) => {
 		const course = await db['course'].findOne({
 			where: {'payment_intent': payment.id},
 			include: [
@@ -197,15 +196,11 @@ async function getAllPayement() {
 			currency: payment.currency,
 			customerStripeId: payment.customer,
 			status: payment.status,
-			...course
+			...course.toJSON()
 		}
-	})
+	}))
 	return serializePayments;
 }
-getAllPayement().then((res) => {
-	console.log(res)
-	process.exit(0)
-})
 
 module.exports = {
 	addCardIntent,
@@ -216,5 +211,6 @@ module.exports = {
 	setDefault,
 	getDefault,
 	deleteCard,
-	refundRace
+	refundRace,
+	getAllPayement
 }
