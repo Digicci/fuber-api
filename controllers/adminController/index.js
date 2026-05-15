@@ -10,6 +10,7 @@ dotenv.config()
 const db = require(join(cwd, 'models', 'index.js'));
 const e = require("express");
 const {where} = require("sequelize");
+const {getAllPayement} = require("../cardController");
 
 
 function connectAdmin(req,res){
@@ -130,6 +131,69 @@ function getAllEntreprise(req,res){
   }
 }
 
+function getAllEntrepriseWithDetails(req,res){
+  const utilisateur = db['entreprise']
+  if(req.user){
+    utilisateur.findAll({
+      where: {
+        employerId: null,
+      },
+      attributes:{
+        exclude:[
+          'mdp',
+          'code_recup',
+          'UUID',
+          'socket_token',
+          'lat',
+          'lng'
+        ]
+      },
+      include: [
+        {
+          model: db['course'],
+          as: 'courses',
+          include: [
+            {
+              model: db['utilisateur'],
+              as: 'utilisateur',
+              attributes: {
+                exclude: [
+                  'mdp',
+                  'code_recup',
+                  'JWT',
+                  'stripe_id',
+                  'JWT_secret',
+                  'UUID'
+                ]
+              }
+            }
+          ]
+        },
+        {
+          model: db['entreprise'],
+          as: 'employes',
+          include: [
+            {
+              model: db['course'],
+              as: 'courses',
+            }
+          ]
+        }
+      ]
+    }).then(
+     (user) => {
+       if(user) {
+         res.status(200).send(user)
+       } else {
+         res.status(400).send('Bad request.')
+       }
+     }
+    )
+  } else {
+    res.status(400).send('Bad request.')
+  }
+}
+
 
 function getTeamByEmployerId (req,res) {
   const {id} = req.params
@@ -197,6 +261,12 @@ function updateEntrepriseCommission(req, res) {
   })
 }
 
+function getStipePaymentList(req, res) {
+  getAllPayement().then((payments) => {
+    res.status(200).send(payments)
+  })
+}
+
 
 
 module.exports = {
@@ -207,5 +277,7 @@ module.exports = {
   getTeamByEmployerId,
   updateDriverPending,
   refreshToken,
-  updateEntrepriseCommission
+  updateEntrepriseCommission,
+  getAllEntrepriseWithDetails,
+  getStipePaymentList
 }
