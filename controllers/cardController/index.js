@@ -196,7 +196,7 @@ async function getAllPayement() {
 			currency: payment.currency,
 			customerStripeId: payment.customer,
 			status: payment.status,
-			...course.toJSON()
+			...course?.toJSON()
 		}
 	}))
 	return serializePayments;
