@@ -188,6 +188,7 @@ async function getAllPayement() {
 				}
 			]
 		})
+		if (!course) return
 		return {
 			id: payment.id,
 			amount: payment.amount,
@@ -199,7 +200,7 @@ async function getAllPayement() {
 			...course?.toJSON()
 		}
 	}))
-	return serializePayments;
+	return (await serializePayments).filter((p) => p);
 }
 
 module.exports = {
